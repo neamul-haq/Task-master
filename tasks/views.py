@@ -3,6 +3,6 @@ from django.http import HttpResponse
 # Create your views here.
 
 def manager_dashboard(request):
-    return render(request, "manager_dashboard.html")
+    return render(request, "dashboard/manager_dashboard.html")
 def user_dashboard(request):
-    return render(request, "user_dashboard.html")
+    return render(request, "dashboard/user_dashboard.html")
