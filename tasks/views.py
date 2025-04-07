@@ -5,7 +5,24 @@ from tasks.models import Employee, Task
 # Create your views here.
 
 def manager_dashboard(request):
-    return render(request, "dashboard/manager_dashboard.html")
+    tasks = Task.objects.all()
+    
+    #Getting task count
+    total_task = tasks.count()
+    pending_task = Task.objects.filter(status="PENDING").count()
+    in_progress_task = Task.objects.filter(status="IN_PROGRESS").count()
+    completed_task = Task.objects.filter(status="COMPLETED").count()
+    
+    context = {
+        tasks : tasks,
+        "total_task" : total_task,
+        "pending_task" : pending_task,
+        "completed_task" : completed_task,
+        "in_progress_task": in_progress_task
+    }
+    
+    return render(request, "dashboard/manager_dashboard.html", context)
+
 def user_dashboard(request):
     return render(request, "dashboard/user_dashboard.html")
 
@@ -20,20 +37,13 @@ def create_task(request):
             form.save()
             return render(request, 'task_form.html', {"form": form, "message": "Task Added Successfully"})
             
-            ''' For Django Form Data '''
-            # data = form.cleaned_data
-            # title = data.get('title')
-            # description = data.get('description')
-            # due_date = data.get('due_date')
-            # assigned_to = data.get('assigned_to')
-            
-            # task = Task.objects.create(title=title, description=description, due_date=due_date)
-            
-            # # Assign Employee to Tasks
-            # for emp_id in assigned_to:
-            #     employee = Employee.objects.get(id = emp_id)
-            #     task.assigned_to.add(employee)
                 
             
     context = {"form": form}
     return render(request, "task_form.html", context)
+
+
+def view_task(request):
+    #Retrieve all data from Task Model
+    tasks = Task.objects.all()
+    return render(request, "show_task.html", {"tasks": tasks})
