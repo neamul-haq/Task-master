@@ -70,9 +70,17 @@ class TaskModelForm(StyledFormMixin, forms.ModelForm):
             'due_date': forms.SelectDateWidget,
             'assigned_to': forms.CheckboxSelectMultiple
         }
+        
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.apply_styled_widgets()
 
 
-# class TaskDetailModelForm(StyledFormMixin, forms.ModelForm):
-#     class Meta:
-#         model = TaskDetail
-#         fields = ['priority', 'notes', 'asset']
+class TaskDetailModelForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = TaskDetail
+        fields = ['priority', 'notes'] 
+        
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.apply_styled_widgets()
