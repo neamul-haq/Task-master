@@ -65,13 +65,14 @@ def create_task(request):
     return render(request, "task_form.html", context)
 
 
-def update_task(request):
-    # employees = Employee.objects.all()
-    task_form = TaskModelForm() #For GET
-    task_detail_form = TaskDetailModelForm()
+def update_task(request, id):
+    task = Task.objects.get(id=id)
+    task_form = TaskModelForm(instance=task) #For GET
+    if task.details:
+        task_detail_form = TaskDetailModelForm(instance=task.details)
     if request.method == "POST":
-        task_form = TaskModelForm(request.POST) #For GET
-        task_detail_form = TaskDetailModelForm(request.POST)
+        task_form = TaskModelForm(request.POST, instance=task) 
+        task_detail_form = TaskDetailModelForm(request.POST, instance=task.details)
         
         if task_form.is_valid() and task_detail_form.is_valid():
             
@@ -81,14 +82,26 @@ def update_task(request):
             task_detail.task = task
             task_detail.save()
             
-            messages.success(request,"Task Created Successfully")
-            return redirect('create-task')
+            messages.success(request,"Task Updated Successfully")
+            return redirect('update-task', id)
             
                 
             
     context = {"task_form": task_form, "task_detail_form": task_detail_form}
     return render(request, "task_form.html", context)
 
+
+def delete_task(request, id):
+    #get method diyeo kora jay delete handle but post diye kora recommended
+    if request.method == 'POST':
+        task = Task.objects.get(id=id)
+        task.delete()
+        messages.success(request, 'Task Deleted Successfully')
+        return redirect('manager-dashboard')
+    else:
+        messages.error(request, 'Something Went Wrong')
+        return redirect('manager-dashboard')
+    
 
 def view_task(request):
     #Retrieve all data from Task Model
