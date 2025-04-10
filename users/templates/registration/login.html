@@ -1,20 +1,25 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
 </head>
 <body>
     <h1>Log In</h1>
     <div> 
+        {% if messages %}
+            {% for message in  messages%}
+                <div class="px-2 py-1 {% if message.tags == 'success' %}bg-green-500{% endif %}">{{message}}</div>
+            {% endfor %}
+        {% endif %}
         <form action="" method="post">
             {% csrf_token %}
-            <input type="text" name="username" id="" placeholder="Enter your Username">
-            <input type="password" name="password" id="" placeholder="Enter your Password">
-            <button type="submit">Sign In</button>
+            {{form}}
+            <br>
+            <button class='bg-rose-500 px-2 py-1 rounded-sm' type="submit">Sign In</button>
         </form>
     </div>
 </body>
