@@ -72,7 +72,13 @@ def is_admin(user):
     
 @user_passes_test(is_admin, login_url='no-permission')  
 def admin_dashboard(request):
-    users = User.objects.all()
+    users = User.objects.prefetch_related('groups').all()
+    
+    for user in users:
+        if user.groups.exists():
+            user.group_name = user.groups.first().name
+        else:
+            user.group_name = 'No Group Assigned'
     return render(request, 'admin/dashboard.html', {"users":users})
 
 @user_passes_test(is_admin, login_url='no-permission')
@@ -106,5 +112,5 @@ def create_group(request):
 
 @user_passes_test(is_admin, login_url='no-permission')
 def group_list(request):
-    groups = Group.objects.all()
+    groups = Group.objects.prefetch_related('permissions').all()
     return render(request, 'admin/group_list.html', {'groups':groups})
