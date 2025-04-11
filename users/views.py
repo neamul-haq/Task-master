@@ -90,7 +90,7 @@ def create_group(request):
     if request.method == 'POST':
         form = CreateGroupForm(request.POST)
         
-        if form.valid():
+        if form.is_valid():
             group = form.save()
             messages.success(request, f"Group {group.name} has been created successfully")
             return redirect('create-group')
