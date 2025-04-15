@@ -7,6 +7,12 @@ from django.contrib import messages
 from users.forms import LoginForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required, user_passes_test
+from tasks.models import Task
+
+
+#Test for users
+def is_admin(user):
+    return user.groups.filter(name='Admin').exists()
 # Create your views here.
 def sign_up(request):
     form = CustomRegistrationForm()
@@ -66,9 +72,7 @@ def activate_user(request, user_id, token):
         return HttpResponse('User not found')
     
     
-#Test for users
-def is_admin(user):
-    return user.groups.filter(name='Admin').exists()
+
     
 @user_passes_test(is_admin, login_url='no-permission')  
 def admin_dashboard(request):
@@ -114,3 +118,9 @@ def create_group(request):
 def group_list(request):
     groups = Group.objects.prefetch_related('permissions').all()
     return render(request, 'admin/group_list.html', {'groups':groups})
+
+@user_passes_test(is_admin, login_url='no-permission')
+def view_task(request):
+    #Retrieve all data from Task Model
+    tasks = Task.objects.all()
+    return render(request, "admin/show_tasks.html", {"tasks": tasks})

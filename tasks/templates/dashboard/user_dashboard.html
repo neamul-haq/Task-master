@@ -9,27 +9,16 @@
           <div class="bg-white p-6 rounded-lg shadow">
             <h2 class="text-2xl font-bold mb-4">Today's Tasks</h2>
             <ul class="space-y-4">
-              <li class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  <span>Complete project proposal</span>
-                </div>
-                <span class="text-sm text-gray-500">High</span>
-              </li>
-              <li class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                  <span>Review team updates</span>
-                </div>
-                <span class="text-sm text-gray-500">Normal</span>
-              </li>
-              <li class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  <span>Prepare for client meeting</span>
-                </div>
-                <span class="text-sm text-gray-500">Low</span>
-              </li>
+              {% for task in todays_tasks %}
+                <li class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    <span>{{task.title}}</span>
+                  </div>
+                  <span class="text-sm text-gray-500">{{ task.details.get_priority_display }}</span>
+                </li>
+              {% endfor %}
+              
             </ul>
           </div>
           <div class="bg-white p-6 rounded-lg shadow">

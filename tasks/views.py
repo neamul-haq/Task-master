@@ -1,18 +1,21 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from tasks.forms import TaskForm, TaskModelForm, TaskDetailModelForm
-from tasks.models import Employee, Task, TaskDetail, Project
+from tasks.models import Task, TaskDetail, Project
 from django.db.models import Q, Count, Avg, Min, Max
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required, permission_required
-
+from datetime import date
+# from users.views import is_admin
 
 # Create your views here.
 
 def is_manager(user):
     return user.groups.filter(name='Manager').exists()
 def is_employee(user):
-    return user.groups.filter(name='Employee').exists()
+    return user.groups.filter(name='User').exists()
+def is_admin(user):
+    return user.groups.filter(name='Admin').exists()
 
 @user_passes_test(is_manager, login_url='no-permission')
 def manager_dashboard(request):
@@ -97,7 +100,7 @@ def update_task(request, id):
             task_detail.save()
             
             messages.success(request,"Task Updated Successfully")
-            return redirect('update-task', id)
+            return redirect('dashboard')
             
                 
             
@@ -125,3 +128,55 @@ def view_task(request):
     #Retrieve all data from Task Model
     tasks = Task.objects.all()
     return render(request, "show_task.html", {"tasks": tasks})
+
+@login_required
+@permission_required("tasks.view_task", login_url='no-permission')
+def task_details(request, task_id):
+    task = Task.objects.get(id=task_id)
+    return render(request, 'task_details.html', {"task":task})
+
+@login_required
+def dashboard(request):
+    if is_manager(request.user):
+        return redirect('manager-dashboard')
+    elif is_admin(request.user):
+        return redirect('admin-dashboard')
+    elif is_employee(request.user):
+        # return redirect('user-dashboard')
+        user = request.user
+        # today = date.today()
+
+        tasks = Task.objects.prefetch_related('assigned_to', 'details').filter(assigned_to=user)
+
+        todays_tasks = tasks.filter(
+            status__in=['PENDING', 'IN_PROGRESS']
+        ).order_by('due_date')
+
+        return render(request, 'dashboard/user_dashboard.html', {
+            'todays_tasks': todays_tasks,
+            'all_tasks': tasks,
+        })
+        
+    return redirect('no-permission')
+
+
+@login_required
+def dashboard_view(request):
+    user = request.user
+    today = date.today()
+
+    tasks = Task.objects.prefetch_related('assigned_to', 'details').filter(assigned_to=user)
+
+    all_tasks = user.tasks.select_related('project').prefetch_related('assigned_to', 'details')
+    todays_tasks = Task.objects.filter(
+        assigned_to=user,
+        status__in=['PENDING', 'IN_PROGRESS']
+    ).order_by('due_date')
+
+    return render(request, 'dashboard/user_dashboard.html', {
+        'todays_tasks': todays_tasks,
+        'all_tasks': all_tasks,
+    })
+
+
+
