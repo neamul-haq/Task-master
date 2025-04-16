@@ -9,7 +9,7 @@
     <h1 class="text-3xl font-bold mb-6">{{task.title}}</h1>
 
     <!-- Navigation Tabs -->
-    {% comment %} <div class="flex gap-4 mb-8 border-b">
+     <div class="flex gap-4 mb-8 border-b">
       <button
         class="px-4 py-2 bg-blue-50 text-blue-600 rounded-t-lg flex items-center gap-2"
       >
@@ -29,23 +29,26 @@
         Task Detail
       </button>
       <div class="flex items-center gap-2">
-        <select
-          name="task_status"
-          id="task_status"
-          class="px-4 py-2 border rounded-md"
-        >
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </select>
-        <button
-          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          type="submit"
-        >
-          Change Status
-        </button>
+        <form action="" method='post'>
+          {% csrf_token %}
+          <select
+            name="task_status"
+            id="task_status"
+            class="px-4 py-2 border rounded-md"
+          >
+            {% for value, label in status_choices %}
+              <option value="{{ value }}">{{label}}</option>
+            {% endfor %}
+          </select>
+          <button
+            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            type="submit"
+          >
+            Change Status
+          </button>
+        </form>
       </div>
-    </div> {% endcomment %}
+    </div>  
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Main Content -->

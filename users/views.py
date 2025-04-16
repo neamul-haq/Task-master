@@ -15,7 +15,7 @@ def is_admin(user):
     return user.groups.filter(name='Admin').exists()
 # Create your views here.
 def sign_up(request):
-    form = CustomRegistrationForm()
+    form = CustomRegistrationForm()#get
     if request.method == 'POST':
         form = CustomRegistrationForm(request.POST)
         if form.is_valid():
