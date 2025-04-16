@@ -10,6 +10,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic.base import ContextMixin 
+from django.views.generic import ListView, DetailView
 # from users.views import is_admin
 
 #variable for list of decorators
@@ -97,7 +98,7 @@ def create_task(request):
     return render(request, "task_form.html", context)
 
 
-# @method_decorator(decorators, name="dispatch")
+# create_decorators = [login_required, permission_required("tasks.change_task", login_url='no-permission')]
 class CreateTask(ContextMixin, LoginRequiredMixin, PermissionRequiredMixin , View):
     """ for creating task"""
     permission_required = 'tasks.add_task'
@@ -180,6 +181,29 @@ def view_task(request):
     tasks = Task.objects.all()
     return render(request, "show_task.html", {"tasks": tasks})
 
+# @login_required
+# @permission_required("projects.view_project", login_url='no-permission')
+# def view_project(request):
+#     #project name and how many tasks it has
+#     projects = Project.objects.annotate(
+#         num_task = Count('task')).order_by('num_task')
+#     return render(request, "show_project.html", {"projects": projects})
+
+
+view_project_decorators = [login_required, permission_required("projects.view_project", login_url='no-permission')]
+
+@method_decorator(view_project_decorators, name='dispatch')
+class ViewProject(ListView): 
+    model = Project
+    context_object_name = "projects"
+    template_name = 'show_project.html'
+    
+    def get_queryset(self):
+        queryset = Project.objects.annotate(
+            num_task = Count('task')).order_by('num_task')
+        return queryset
+    
+
 @login_required
 @permission_required("tasks.view_task", login_url='no-permission')
 def task_details(request, task_id):
@@ -193,6 +217,27 @@ def task_details(request, task_id):
         return redirect('task-details', task.id)
     
     return render(request, 'task_details.html', {"task":task, 'status_choices': status_choices})
+
+
+class TaskDetail(DetailView):
+    model = Task
+    template_name = 'task_details.html'
+    context_object_name = 'task'
+    pk_url_kwarg = 'task_id'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs) #{"task":task}
+        context['status_choices'] = Task.STATUS_CHOICES #{"task":task, 'status_choices': status_choices}
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        task = self.get_object()
+        selected_status = request.POST.get('task_status')
+        task.status = selected_status
+        task.save()
+        return redirect('task-details', task.id)
+    
+    
 
 @login_required
 def dashboard(request):

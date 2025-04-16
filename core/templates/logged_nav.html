@@ -11,7 +11,8 @@
             >Dashboard</a
           >
           
-            <a href="{% url 'manager-dashboard' %}" class="text-gray-600 hover:text-gray-800">Tasks</a>
+            <a href="{% url 'view-task' %}" class="text-gray-600 hover:text-gray-800">Tasks</a>
+            {% comment %} <a href="{% url 'view-project' %}" class="text-gray-600 hover:text-gray-800">Projects</a> {% endcomment %}
             <a
               href="{% url 'create-task' %}"
               class="text-gray-600 hover:text-gray-800"
