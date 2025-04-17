@@ -4,11 +4,12 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth import login, authenticate, logout
 from users.forms import RegisterForm, CustomRegistrationForm, AssignRoleForm,CreateGroupForm
 from django.contrib import messages
-from users.forms import LoginForm
+from users.forms import LoginForm, CustomPasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required, user_passes_test
 from tasks.models import Task
-
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.views.generic import TemplateView
 
 #Test for users
 def is_admin(user):
@@ -124,3 +125,32 @@ def view_task(request):
     #Retrieve all data from Task Model
     tasks = Task.objects.all()
     return render(request, "admin/show_tasks.html", {"tasks": tasks})
+
+class CustomLoginView(LoginView):
+    form_class = LoginForm
+    
+    def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        return next_url if next_url else super().get_success_url()
+    
+
+class ChangePassword(PasswordChangeView):
+    template_name = 'accounts/password_change.html'
+    form_class = CustomPasswordChangeForm
+    
+    
+class ProfileView(TemplateView):
+    template_name = 'accounts/profile.html'
+    
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        context['username'] = user.username
+        context['email'] = user.email
+        context['name'] = user.get_full_name()
+        
+        context['member_since'] = user.date_joined
+        context['last_login'] = user.last_login
+        
+        return context
