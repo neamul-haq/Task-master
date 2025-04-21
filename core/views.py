@@ -7,3 +7,7 @@ def home(request):
 
 def no_permission(request):
     return render(request, 'no_permission.html')
+
+
+def permission_denied(request):
+    return render(request, 'permission_denied.html', status=403)

@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from debug_toolbar.toolbar import debug_toolbar_urls
-from core.views import home, no_permission 
+from core.views import home, no_permission , permission_denied
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('', home, name="home"),
     path('no-permission', no_permission, name="no-permission"),
+    path('permission-denied/', permission_denied, name='permission-denied'),
 ]+ debug_toolbar_urls()

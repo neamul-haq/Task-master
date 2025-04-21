@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import login, authenticate, logout
@@ -11,13 +11,37 @@ from tasks.models import Task
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordResetView, PasswordResetConfirmView
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
-
+from core.models import Role, UserRole
 #Test for users
+# def is_admin(user):
+#     return user.groups.filter(name='Admin').exists()
+
 def is_admin(user):
-    return user.groups.filter(name='Admin').exists()
+    return hasattr(user, 'custom_role') and user.custom_role.role.name == 'Admin'
+
+
 # Create your views here.
+# def sign_up(request):
+#     form = CustomRegistrationForm()#get
+#     if request.method == 'POST':
+#         form = CustomRegistrationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.set_password(form.cleaned_data.get('password1'))
+#             user.is_active = False
+#             user.save()
+#             messages.success(
+#                 request, 'A Confirmation mail sent. Please check your mail')
+#             return redirect('sign-in')
+#         else:
+#             print("Form is not valid")
+#     return render(request, 'registration/register.html', {"form" : form})
+
+  # ✅ make sure these are imported
+
 def sign_up(request):
-    form = CustomRegistrationForm()#get
+    form = CustomRegistrationForm()
+    
     if request.method == 'POST':
         form = CustomRegistrationForm(request.POST)
         if form.is_valid():
@@ -25,12 +49,25 @@ def sign_up(request):
             user.set_password(form.cleaned_data.get('password1'))
             user.is_active = False
             user.save()
+
+            # ✅ Assign 'User' role after saving the user
+            try:
+                default_role = Role.objects.get(name='User')
+                UserRole.objects.create(user=user, role=default_role)
+            except Role.DoesNotExist:
+                print("⚠️ Role 'User' not found. Make sure it's seeded.")
+            
             messages.success(
-                request, 'A Confirmation mail sent. Please check your mail')
+                request, 'A Confirmation mail sent. Please check your mail'
+            )
             return redirect('sign-in')
         else:
             print("Form is not valid")
-    return render(request, 'registration/register.html', {"form" : form})
+    
+    return render(request, 'registration/register.html', {"form": form})
+
+
+
 
 
 def sign_in(request):
@@ -72,56 +109,107 @@ def activate_user(request, user_id, token):
             return HttpResponse('Invalid Id or token')
     except User.DoesNotExist:
         return HttpResponse('User not found')
-    
-    
+       
 
     
-@user_passes_test(is_admin, login_url='no-permission')  
+# @user_passes_test(is_admin, login_url='no-permission')  
+# def admin_dashboard(request):
+#     users = User.objects.prefetch_related('groups').all()
+    
+#     for user in users:
+#         if user.groups.exists():
+#             user.group_name = user.groups.first().name
+#         else:
+#             user.group_name = 'No Group Assigned'
+#     return render(request, 'admin/dashboard.html', {"users":users})
+
+@user_passes_test(is_admin, login_url='permission-denied')  # ✅ custom permission page
 def admin_dashboard(request):
-    users = User.objects.prefetch_related('groups').all()
-    
-    for user in users:
-        if user.groups.exists():
-            user.group_name = user.groups.first().name
-        else:
-            user.group_name = 'No Group Assigned'
-    return render(request, 'admin/dashboard.html', {"users":users})
+    users = User.objects.select_related('custom_role__role').all()
 
-@user_passes_test(is_admin, login_url='no-permission')
-def assign_role(request, user_id):
-    user = User.objects.get(id=user_id)
-    form = AssignRoleForm()
+    for user in users:
+        if hasattr(user, 'custom_role'):
+            user.role_name = user.custom_role.role.name
+        else:
+            user.role_name = 'No Role Assigned'
+
+    return render(request, 'admin/dashboard.html', {"users": users})
+
+
+# @user_passes_test(is_admin, login_url='permission-denied')
+# def assign_role(request, user_id):
+#     user = User.objects.get(id=user_id)
+#     form = AssignRoleForm()
     
+#     if request.method == 'POST':
+#         form = AssignRoleForm(request.POST)
+#         if form.is_valid():
+#             role = form.cleaned_data.get('role')
+#             user.groups.clear() #Remove old roles
+#             user.groups.add(role)
+#             messages.success(request, f"User {user.username} has been assigned to the {role.name} role")
+#             return redirect('admin-dashboard')
+        
+#     return render(request, 'admin/assign_role.html', {"form" : form})
+        
+        
+@user_passes_test(is_admin, login_url='permission-denied')        
+def assign_role(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    form = AssignRoleForm()
+
     if request.method == 'POST':
         form = AssignRoleForm(request.POST)
         if form.is_valid():
             role = form.cleaned_data.get('role')
-            user.groups.clear() #Remove old roles
-            user.groups.add(role)
-            messages.success(request, f"User {user.username} has been assigned to the {role.name} role")
+
+            
+            UserRole.objects.update_or_create(user=user, defaults={'role': role})
+
+            messages.success(request, f"✅ User '{user.username}' has been assigned the role: {role.name}")
             return redirect('admin-dashboard')
+
+    return render(request, 'admin/assign_role.html', {"form": form, "user": user})
+
         
-    return render(request, 'admin/assign_role.html', {"form" : form})
+# @user_passes_test(is_admin, login_url='no-permission')
+# def create_group(request):
+#     form = CreateGroupForm()
+#     if request.method == 'POST':
+#         form = CreateGroupForm(request.POST)
         
-@user_passes_test(is_admin, login_url='no-permission')
+#         if form.is_valid():
+#             group = form.save()
+#             messages.success(request, f"Group {group.name} has been created successfully")
+#             return redirect('create-group')
+        
+#     return render(request, 'admin/create_group.html', {'form': form})
+
+
+@user_passes_test(is_admin, login_url='permission-denied')  
 def create_group(request):
     form = CreateGroupForm()
+    
     if request.method == 'POST':
         form = CreateGroupForm(request.POST)
-        
         if form.is_valid():
-            group = form.save()
-            messages.success(request, f"Group {group.name} has been created successfully")
+            role = Role.objects.create(name=form.cleaned_data['name'])
+            permissions = form.cleaned_data['permissions']
+            role.permissions.set(permissions)
+
+            messages.success(request, f"✅ Role '{role.name}' created with {permissions.count()} permission(s).")
             return redirect('create-group')
-        
+    
     return render(request, 'admin/create_group.html', {'form': form})
+
+
 
 @user_passes_test(is_admin, login_url='no-permission')
 def group_list(request):
     groups = Group.objects.prefetch_related('permissions').all()
     return render(request, 'admin/group_list.html', {'groups':groups})
 
-@user_passes_test(is_admin, login_url='no-permission')
+@user_passes_test(is_admin, login_url='permission-denied')
 def view_task(request):
     #Retrieve all data from Task Model
     tasks = Task.objects.all()

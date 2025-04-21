@@ -1,21 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div>
-       <ol>
-            {% for project in projects %}
-                <li>
-                    <p>Project name: {{project.name}}</p>
-                    <p>No. of Tasks: {{project.num_task}}</p>
-                </li>
-            {% endfor %}
-            </ol> 
-            {% comment %} <p>{{task_count}}</p> {% endcomment %}
-    </div>
-</body>
-</html>
+
+
+{% extends "admin/dashboard.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-10 space-y-4">
+    <h2 class="text-2xl font-bold text-center mb-6">📋 Project Overview</h2>
+    <ol class="space-y-4">
+        {% for project in projects %}
+            <li class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-lg font-semibold text-rose-600">📁 {{ project.name }}</p>
+                        <p class="text-gray-500">Tasks in this project: <span class="font-bold text-gray-700">{{ project.num_task }}</span></p>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        #{{ forloop.counter }}
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <li class="text-center text-gray-500">No projects found.</li>
+        {% endfor %}
+    </ol>
+</div>
+
+{% endblock content %}
