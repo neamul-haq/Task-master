@@ -3,6 +3,7 @@ from django.urls import reverse
 from core.models import UserRole
 
 class RoleAccessControlMiddleware:
+    
     def __init__(self, get_response):
         self.get_response = get_response
 

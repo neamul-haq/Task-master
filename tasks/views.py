@@ -346,14 +346,13 @@ from django.views.generic.base import ContextMixin
 from django.views.generic import ListView, DetailView, UpdateView
 from core.models import UserRole
 
-# --- Role checkers using UserRole ---
+# --- Role checkers using Custom Model Manager ---
 def get_user_role(user):
-    if hasattr(user, 'custom_role'):
-        return user.custom_role.role.name
-    return None
+    return UserRole.objects.get_role_name(user)
 
-def has_custom_permission(user, permission_code):
-    return user.is_authenticated and hasattr(user, 'custom_role') and user.custom_role.role.permissions.filter(code=permission_code).exists()
+def has_custom_permission(user, code):
+    return UserRole.objects.has_permission(user, code)
+
 
 def require_custom_permission(permission_code):
     def decorator(view_func):
