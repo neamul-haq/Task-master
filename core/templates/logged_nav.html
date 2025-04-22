@@ -13,11 +13,13 @@
           
             <a href="{% url 'can_view_task' %}" class="text-gray-600 hover:text-gray-800">Tasks</a>
             {% comment %} <a href="{% url 'view-project' %}" class="text-gray-600 hover:text-gray-800">Projects</a> {% endcomment %}
-            <a
-              href="{% url 'can_add_task' %}"
-              class="text-gray-600 hover:text-gray-800"
-              >Create Task</a
-            > 
+            {% if user_role.name == "Manager" or user_role.name == "Admin"%}
+              <a
+                href="{% url 'can_add_task' %}"
+                class="text-gray-600 hover:text-gray-800"
+                >Create Task</a
+              > 
+            {% endif %}
             
         </div>
         <div class="flex items-center">

@@ -5,7 +5,7 @@
     {% comment %} Stats Grid   {% endcomment %}
     <div class="grid grid-cols-4 gap-6 my-8">
       {% comment %} Total Task   {% endcomment %}
-     <a href="{% url 'manager-dashboard' %}?type=all">
+     <a href="{% url 'can_view_task' %}?type=all">
        <div class="bg-white rounded-xl p-6 shadow-sm">
          <h3 class="text-sm font-medium text-gray-500 mb-4">TOTAL TASK</h3>
          <div class="flex justify-between items-start">
@@ -33,7 +33,7 @@
        </div>
      </a>
       {% comment %} Completed Task   {% endcomment %}
-     <a href="{% url 'manager-dashboard' %}?type=completed">
+     <a href="{% url 'can_view_task' %}?type=completed">
        <div class="bg-white rounded-xl p-6 shadow-sm">
        <h3 class="text-sm font-medium text-gray-500 mb-4">
          COMPLETED TASK
@@ -63,7 +63,7 @@
        </div>
      </a>
       {% comment %} Task In Progress   {% endcomment %}
-     <a href="{% url 'manager-dashboard' %}?type=in-progress">
+     <a href="{% url 'can_view_task' %}?type=in-progress">
          <div class="bg-white rounded-xl p-6 shadow-sm">
            <h3 class="text-sm font-medium text-gray-500 mb-4">
              TASK IN PROGRESS
@@ -93,7 +93,7 @@
          </div>
      </a>
      {% comment %} TODOS   {% endcomment %}
-     <a href="{% url 'manager-dashboard' %}?type=pending">
+     <a href="{% url 'can_view_task' %}?type=pending">
        <div class="bg-white rounded-xl p-6 shadow-sm">
          <h3 class="text-sm font-medium text-gray-500 mb-4">PENDING TASKS</h3>
          <div class="flex justify-between items-start">

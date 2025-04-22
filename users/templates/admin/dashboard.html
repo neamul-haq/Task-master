@@ -25,11 +25,14 @@
             {% comment %} <a href="{% url 'group-list' %}" class="text-gray-600 hover:text-gray-800"
               >Groups</a
             > {% endcomment %}
-            <a
-              href="{% url 'create-group' %}"
-              class="text-gray-600 hover:text-gray-800"
-              >Create Group</a
-            >
+            {% if user_role.name == "Admin" %}
+              <a
+                href="{% url 'create-group' %}"
+                class="text-gray-600 hover:text-gray-800"
+                >Create Group</a
+              >
+            {% endif %}
+
           </div>
           <div class="flex items-center">
             <div class="relative">

@@ -514,8 +514,29 @@ def delete_task(request, id):
 
 @require_custom_permission("can_view_task")
 def view_task(request):
-    tasks = Task.objects.all()
-    return render(request, "show_task.html", {"tasks": tasks})
+    type = request.GET.get('type', 'all')
+
+    counts = Task.objects.aggregate(
+        total=Count('id'),
+        completed=Count('id', filter=Q(status='COMPLETED')),
+        in_progress=Count('id', filter=Q(status='IN_PROGRESS')),
+        pending=Count('id', filter=Q(status='PENDING'))
+    )
+
+    base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
+    tasks = base_query.all()
+
+    if type == 'completed':
+        tasks = base_query.filter(status='COMPLETED')
+    elif type == 'in-progress':
+        tasks = base_query.filter(status='IN_PROGRESS')
+    elif type == 'pending':
+        tasks = base_query.filter(status='PENDING')
+
+    return render(request, "show_task.html", {
+        "tasks": tasks,
+        "counts": counts,
+    })
 
 @method_decorator([login_required, require_custom_permission("can_view_project")], name='dispatch')
 class ViewProject(ListView):
