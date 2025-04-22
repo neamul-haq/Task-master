@@ -17,3 +17,44 @@ def humanized_date(value):
         else:
             return f"{value.date().strftime('%B %d')}, {value.strftime('%I:%M %p')}"
     return "No login record available"
+
+
+@register.filter
+def round_val(value, digits=0):
+    
+    try:
+        return round(float(value), int(digits))
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
+def add(value, arg):
+
+    try:
+        return float(value) + float(arg)
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
+def subtract(value, arg):
+
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
+def multiply(value, arg):
+
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
+def divide(value, arg):
+
+    try:
+        return float(value) / float(arg)
+    except (ValueError, TypeError, ZeroDivisionError):
+        return "∞"

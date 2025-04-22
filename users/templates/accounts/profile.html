@@ -75,10 +75,16 @@
               Passionate software developer with 5 years of experience in web
               technologies. Loves to create user-friendly and efficient
               applications. In free time, enjoys hiking and reading tech blogs.
-            </p>
+            <p>{{ 3.14159|round_val:2 }}  </p>            {# 3.14 #}
+            <p>{{ 10|add:5 }}    </p>                     {# 15 #}
+            <p>{{ 10|subtract:2 }}  </p>                  {# 8 #}
+            <p>{{ 4|multiply:3 }}    </p>                 {# 12 #}
+            <p>{{ 10|divide:2 }} </p>                  {# 5.0 #}</p>
           </div>
         </div>
       </main>
     </div>
   </div>
+
+
   {% endblock content %}
