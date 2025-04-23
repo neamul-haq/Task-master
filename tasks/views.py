@@ -338,7 +338,7 @@ from tasks.forms import TaskForm, TaskModelForm, TaskDetailModelForm
 from tasks.models import Task, TaskDetail, Project
 from django.db.models import Q, Count
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from datetime import date
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -352,7 +352,6 @@ def get_user_role(user):
 
 def has_custom_permission(user, code):
     return UserRole.objects.has_permission(user, code)
-
 
 def require_custom_permission(permission_code):
     def decorator(view_func):
@@ -368,22 +367,23 @@ def require_custom_permission(permission_code):
 def manager_dashboard(request):
     type = request.GET.get('type', 'all')
 
-    counts = Task.objects.aggregate(
-        total=Count('id'),
-        completed=Count('id', filter=Q(status='COMPLETED')),
-        in_progress=Count('id', filter=Q(status='IN_PROGRESS')),
-        pending=Count('id', filter=Q(status='PENDING'))
-    )
+    counts = {
+        'total': Task.objects.count(),
+        'completed': Task.objects.completed().count(),
+        'in_progress': Task.objects.in_progress().count(),
+        'pending': Task.objects.pending().count(),
+    }   
+
 
     base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
     tasks = base_query.all()
 
     if type == 'completed':
-        tasks = base_query.filter(status='COMPLETED')
+        tasks = Task.objects.completed()
     elif type == 'in-progress':
-        tasks = base_query.filter(status='IN_PROGRESS')
+        tasks = Task.objects.in_progress()
     elif type == 'pending':
-        tasks = base_query.filter(status='PENDING')
+        tasks = Task.objects.pending()
 
     return render(request, "dashboard/manager_dashboard.html", {
         "tasks": tasks,
@@ -516,22 +516,21 @@ def delete_task(request, id):
 def view_task(request):
     type = request.GET.get('type', 'all')
 
-    counts = Task.objects.aggregate(
-        total=Count('id'),
-        completed=Count('id', filter=Q(status='COMPLETED')),
-        in_progress=Count('id', filter=Q(status='IN_PROGRESS')),
-        pending=Count('id', filter=Q(status='PENDING'))
-    )
-
-    base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
-    tasks = base_query.all()
+    counts = {
+        'total': Task.objects.count(),
+        'completed': Task.objects.completed().count(),
+        'in_progress': Task.objects.in_progress().count(),
+        'pending': Task.objects.pending().count(),
+    }
 
     if type == 'completed':
-        tasks = base_query.filter(status='COMPLETED')
+        tasks = Task.objects.completed()
     elif type == 'in-progress':
-        tasks = base_query.filter(status='IN_PROGRESS')
+        tasks = Task.objects.in_progress()
     elif type == 'pending':
-        tasks = base_query.filter(status='PENDING')
+        tasks = Task.objects.pending()
+    else:
+        tasks = Task.objects.all()
 
     return render(request, "show_task.html", {
         "tasks": tasks,
@@ -588,7 +587,7 @@ def dashboard(request):
         return redirect('admin-dashboard')
     elif role == 'User':
         user = request.user
-        tasks = Task.objects.prefetch_related('assigned_to', 'details').filter(assigned_to=user)
+        tasks = Task.objects.assigned_to(user)
         todays_tasks = tasks.filter(status__in=['PENDING', 'IN_PROGRESS']).order_by('due_date')
 
         return render(request, 'dashboard/user_dashboard.html', {
@@ -601,9 +600,8 @@ def dashboard(request):
 @login_required
 def dashboard_view(request):
     user = request.user
-    tasks = user.tasks.select_related('project').prefetch_related('assigned_to', 'details')
-    todays_tasks = Task.objects.filter(
-        assigned_to=user,
+    tasks = Task.objects.assigned_to(user).select_related('project').prefetch_related('assigned_to', 'details')
+    todays_tasks = Task.objects.assigned_to(user).filter(
         status__in=['PENDING', 'IN_PROGRESS']
     ).order_by('due_date')
 
