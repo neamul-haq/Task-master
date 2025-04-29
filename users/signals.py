@@ -1,9 +1,11 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.mail import send_mail
+from core.models import Role, UserRole
 
 @receiver(post_save, sender=User)
 def send_activation_email(sender, instance, created, **kwargs):
@@ -22,10 +24,28 @@ def send_activation_email(sender, instance, created, **kwargs):
             print(f"Failed to send email to {instance.email}: {str(e)}")
             
             
-@receiver(post_save, sender=User)
-def assign_role(sender, instance, created, **kwargs):
-    if created:
-        user_group, created = Group.objects.get_or_create(name='User')
-        instance.groups.add(user_group)
-        instance.save()
+# @receiver(post_save, sender=User)
+# def assign_role(sender, instance, created, **kwargs):
+#     if created:
+#         user_group, created = Group.objects.get_or_create(name='User')
+#         instance.groups.add(user_group)
+#         instance.save()
+
+
+
+#this is not work for auth0 user
+# @receiver(post_save, sender=User)
+# def assign_role(sender, instance, created, **kwargs):
+#     if created:
+#         # Get or create default "User" role
+#         default_role, _ = Role.objects.get_or_create(name='User')
+
+#         # Assign role to the new user
+#         UserRole.objects.create(user=instance, role=default_role)
     
+    
+@receiver(user_logged_in)
+def assign_role_on_first_login(sender, user, request, **kwargs):
+    if not hasattr(user, 'custom_role'):
+        default_role = Role.objects.get_or_create(name='User')[0]
+        UserRole.objects.create(user=user, role=default_role)

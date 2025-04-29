@@ -24,7 +24,7 @@ class TaskManager(models.Manager):
         return self.get_queryset().completed()
     
     def in_progress(self):
-        return self.get_queryset().in_progress()
+        return self.get_queryset(). in_progress()
     
     def pending(self):
         return self.get_queryset().pending()

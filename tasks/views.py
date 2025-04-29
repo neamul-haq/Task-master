@@ -376,6 +376,7 @@ def manager_dashboard(request):
 
 
     base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
+    print(base_query.query)
     tasks = base_query.all()
 
     if type == 'completed':

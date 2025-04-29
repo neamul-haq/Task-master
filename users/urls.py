@@ -1,3 +1,4 @@
+from django.urls import path, include
 from django.urls import path
 from users.views import sign_up, sign_in, sign_out, activate_user, admin_dashboard, assign_role,create_group, group_list, view_task
 from users.views import CustomLoginView, ProfileView, ChangePassword, CustomPasswordResetView, CustomPasswordResetConfirmView
@@ -5,6 +6,7 @@ from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordCh
 # from django.views.generic import TemplateView
 
 urlpatterns = [
+    path('', include('social_django.urls')),  # This enables /complete/auth0 etc.
     path('sign-up/', sign_up, name='sign-up'),
     # path('sign-in/', sign_in, name='sign-in'),
     path('sign-in/', CustomLoginView.as_view(), name='sign-in'),

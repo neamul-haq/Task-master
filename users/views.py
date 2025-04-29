@@ -12,6 +12,13 @@ from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordRes
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
 from core.models import Role, UserRole
+
+from django.conf import settings
+from django.contrib.auth import logout as django_logout
+from django.http import HttpResponseRedirect
+from decouple import config
+
+
 #Test for users
 # def is_admin(user):
 #     return user.groups.filter(name='Admin').exists()
@@ -91,13 +98,23 @@ def sign_in(request):
     return render(request, 'registration/login.html',{'form': form})
 
 
+# @login_required
+# def sign_out(request):
+#     if request.method == 'POST':
+#         logout(request)
+#         return redirect('sign-in')
+    
+
 @login_required
 def sign_out(request):
-    if request.method == 'POST':
-        logout(request)
-        return redirect('sign-in')
-    
-    
+    django_logout(request)
+    domain = config("APP_DOMAIN")
+    client_id = config("APP_CLIENT_ID")
+    return_to = request.build_absolute_uri('/')  # or your homepage
+    return HttpResponseRedirect(
+        f"https://{domain}/v2/logout?client_id={client_id}&returnTo={return_to}"
+    )
+
 def activate_user(request, user_id, token):
     try:
         user = User.objects.get(id=user_id)

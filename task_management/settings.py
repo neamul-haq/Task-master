@@ -42,7 +42,25 @@ INSTALLED_APPS = [
     'users',
     "debug_toolbar",
     "core",
+    
+    'social_django',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.auth0.Auth0OAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SOCIAL_AUTH_TRAILING_SLASH = False
+SOCIAL_AUTH_AUTH0_DOMAIN = config("APP_DOMAIN")
+SOCIAL_AUTH_AUTH0_KEY = config("APP_CLIENT_ID")
+SOCIAL_AUTH_AUTH0_SECRET = config("APP_CLIENT_SECRET")
+SOCIAL_AUTH_AUTH0_SCOPE = [
+    'openid', 'profile', 'email'
+]
+
+
+
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
@@ -54,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.role_middleware.RoleAccessControlMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 INTERNAL_IPS = [
@@ -151,6 +170,6 @@ FRONTEND_URL = 'http://127.0.0.1:8000'
 
 
 LOGIN_URL = '/users/sign-in'
-LOGIN_REDIRECT_URL = '/tasks/dashboard/'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
