@@ -6,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.mail import send_mail
 from core.models import Role, UserRole
+from users.models import UserProfile
 
 @receiver(post_save, sender=User)
 def send_activation_email(sender, instance, created, **kwargs):
@@ -49,3 +50,11 @@ def assign_role_on_first_login(sender, user, request, **kwargs):
     if not hasattr(user, 'custom_role'):
         default_role = Role.objects.get_or_create(name='User')[0]
         UserRole.objects.create(user=user, role=default_role)
+        
+
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+    else:
+        instance.userprofile.save()
