@@ -26,6 +26,19 @@
             {% endfor %}
             <button class='bg-blue-500 px-2 py-1 rounded text-white mt-3' type="submit">Sign Up</button>
         </form>
+        <div class="mt-6 text-center space-y-2">
+            <p> ------ OR ------</p>
+            <br>
+            <a href="{% url 'social:begin' 'auth0' %}?next={{ request.GET.next|urlencode }}"
+               class="inline-block w-full text-center bg-blue-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded border border-gray-300">
+                Use Social Authentication
+            </a>
+            <br>
+            <br>
+            <a href="{% url 'password-reset' %}" class="text-sm text-blue-500 hover:underline">
+                Forgot Password?
+            </a>
+        </div>
     </div>
 
     {% endblock content %}
