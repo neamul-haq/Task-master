@@ -112,7 +112,7 @@ def sign_out(request):
     client_id = config("APP_CLIENT_ID")
     return_to = request.build_absolute_uri('/')  # or your homepage
     return HttpResponseRedirect(
-        f"https://{domain}/v2/logout?client_id={client_id}&returnTo={return_to}"
+        f"https://{domain}/v2/logout?client_id={client_id}&returnTo={return_to}&federated"
     )
 
 def activate_user(request, user_id, token):

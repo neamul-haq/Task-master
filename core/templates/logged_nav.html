@@ -10,8 +10,14 @@
             class="text-gray-600 hover:text-gray-800"
             >Dashboard</a
           >
-          
+
+          {% if user_role.name == 'User' %}
+            <a href="{% url 'can_view_task' %}" class="text-gray-600 hover:text-gray-800">Total Tasks</a>
+          {% else %}
             <a href="{% url 'can_view_task' %}" class="text-gray-600 hover:text-gray-800">Tasks</a>
+          {% endif %}
+          
+            
             {% comment %} <a href="{% url 'view-project' %}" class="text-gray-600 hover:text-gray-800">Projects</a> {% endcomment %}
             {% if user_role.name == "Manager" or user_role.name == "Admin"%}
               <a

@@ -30,17 +30,21 @@
           </button>
         </div>
         <div class="flex gap-1">
+          <!-- Sign In -->
           <a
-            href="{% url 'social:begin' 'auth0' %}?next={{ request.GET.next|urlencode }}"
-            class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
-            >Sign In</a
+          href="{% url 'social:begin' 'auth0' %}?prompt=login"
+          class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
           >
+          Sign In
+          </a>
 
+          <!-- Sign Up -->
           <a
-            href="{% url 'social:begin' 'auth0' %}?next={{ request.GET.next|urlencode }}"
-            class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
-            >Sign Up</a
+          href="{% url 'social:begin' 'auth0' %}?prompt=login&screen_hint=signup"
+          class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
           >
+          Sign Up
+          </a>
         </div>
       </div>
       <div id="mobile-menu" class="md:hidden hidden mt-4">
