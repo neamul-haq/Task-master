@@ -18,7 +18,7 @@ from django.contrib.auth import logout as django_logout
 from django.http import HttpResponseRedirect
 from decouple import config
 from users.models import UserProfile    
-
+from django.db import transaction
 
 class EditProfileView(UpdateView):
     model = User
@@ -41,8 +41,9 @@ class EditProfileView(UpdateView):
             instance=self.object, userprofile = user_profile)
         return context
     def form_valid(self, form):
-        form.save(commit=True)
-        self.request.user.refresh_from_db()  # 🔁 This ensures profile image is updated in memory
+        with transaction.atomic():
+            form.save(commit=True)
+            self.request.user.refresh_from_db()  # 🔁 This ensures profile image is updated in memory
         return redirect('profile')
     
 
