@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.urls import path
 from users.views import sign_up, sign_in, sign_out, activate_user, admin_dashboard, assign_role,create_group, group_list, view_task
-from users.views import CustomLoginView, ProfileView, ChangePassword, CustomPasswordResetView, CustomPasswordResetConfirmView
+from users.views import CustomLoginView, ProfileView, ChangePassword, CustomPasswordResetView, CustomPasswordResetConfirmView, EditProfileView
 from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordChangeDoneView
 # from django.views.generic import TemplateView
 
@@ -26,4 +26,5 @@ urlpatterns = [
     path('password-change/done/', PasswordChangeDoneView.as_view(template_name='accounts/password_change_done.html'), name='password_change_done'),#ekhane name ta same etai dite hobe
     path('password-reset/', CustomPasswordResetView.as_view(), name='password-reset'),
     path('password-reset/confirm/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),#name ta same etai dite hobe
+    path('edit-profile/', EditProfileView.as_view(), name='edit-profile'),
 ]

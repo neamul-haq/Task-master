@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import login, authenticate, logout
-from users.forms import RegisterForm, CustomRegistrationForm, AssignRoleForm,CreateGroupForm
+from users.forms import RegisterForm, CustomRegistrationForm, AssignRoleForm,CreateGroupForm, EditProfileForm
 from django.contrib import messages
 from users.forms import LoginForm, CustomPasswordChangeForm,CustomPasswordResetForm, CustomPasswordResetConfirmForm
 from django.contrib.auth.tokens import default_token_generator
@@ -12,12 +12,39 @@ from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordRes
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
 from core.models import Role, UserRole
-
+from django.views.generic.edit import UpdateView
 from django.conf import settings
 from django.contrib.auth import logout as django_logout
 from django.http import HttpResponseRedirect
 from decouple import config
+from users.models import UserProfile    
 
+
+class EditProfileView(UpdateView):
+    model = User
+    form_class = EditProfileForm
+    template_name = 'accounts/update_profile.html'
+    context_object_name = 'form'
+    
+    def get_object(self):
+        return self.request.user
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['userprofile'] = UserProfile.objects.get(user=self.request.user)
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_profile = UserProfile.objects.get(user=self.request.user)
+        context['form'] = self.form_class(
+            instance=self.object, userprofile = user_profile)
+        return context
+    def form_valid(self, form):
+        form.save(commit=True)
+        self.request.user.refresh_from_db()  # 🔁 This ensures profile image is updated in memory
+        return redirect('profile')
+    
 
 #Test for users
 # def is_admin(user):
@@ -255,7 +282,11 @@ class ProfileView(TemplateView):
         context['username'] = user.username
         context['email'] = user.email
         context['name'] = user.get_full_name()
-        
+        context['bio'] = user.userprofile.bio if hasattr(user, 'userprofile') else ''
+        default_image = 'https://png.pngtree.com/png-clipart/20231019/original/pngtree-user-profile-avatar-png-image_13369988.png'
+        profile = getattr(user, 'userprofile', None)
+        context['profile_image'] = profile.profile_image.url if profile and profile.profile_image else default_image
+
         context['member_since'] = user.date_joined
         context['last_login'] = user.last_login
         
