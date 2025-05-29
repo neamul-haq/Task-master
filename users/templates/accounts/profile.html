@@ -1,89 +1,73 @@
 {% extends "base.html" %}
 {% load custom_filters %}
 {% block title %} Profile {% endblock title %}
-{% block content %}
-  <div class="bg-gray-100">
-    <div class="flex min-h-screen">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-white shadow-md">
-        <div class="p-4">
-          <h2 class="text-xl font-semibold text-gray-800">Menu</h2>
-        </div>
-        <nav class="mt-6">
-          <a
-            href="#"
-            class="block py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300"
-            >Profile</a
-          >
-          <a href="{% url 'edit-profile' %}" class="block py-2 px-4 text-gray-700 hover:bg-gray-200"
-            >Edit Profile</a
-          >
-          <a href="{% url 'password-change' %}" class="block py-2 px-4 text-gray-700 hover:bg-gray-200"
-            >Change Password</a
-          >
-        </nav>
-      </aside>
+{% block home %}
+<div class="bg-gray-100">
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg border-r h-screen">
+      <div class="p-6 border-b">
+        <h2 class="text-xl font-bold text-gray-800">Dashboard</h2>
+      </div>
+      <nav class="mt-4 space-y-1">
+        <a href="#" class="block px-6 py-3 bg-gray-100 text-gray-900 font-medium rounded-r-full">Profile</a>
+        <a href="{% url 'edit-profile' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Edit Profile</a>
+        <a href="{% url 'logout' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Log Out</a>
+        {# Uncomment if needed #}
+        {# <a href="{% url 'reset-password-auth0' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Change Password</a> #}
+      </nav>
+    </aside>
 
-      <!-- Main Content -->
-      <main class="flex-1 p-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">User Profile</h1>
+    <!-- Main Content -->
+    <main class="flex-1 p-10 bg-gray-100 min-h-screen">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-10 border border-gray-200">
+    
+    <!-- Profile Header -->
+    <div class="flex items-center gap-8 mb-10">
+      <img
+        src="{{ profile_image|default:'/static/images/default-avatar.png' }}"
+        alt="User Avatar"
+        class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md ring-2 ring-gray-200"
+      />
+      <div>
+        <h1 class="text-4xl font-bold text-gray-900">{{ name }}</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ user_role.name }}</p>
+      </div>
+    </div>
 
-        <div class="bg-white shadow-md rounded-lg p-6">
-          <div class="flex items-center mb-6">
-            <img
-              src="{{profile_image}}"
-              alt="User Avatar"
-              class="w-24 h-24 rounded-full object-cover mr-6"
-            />
-            <div>
-              <h2 class="text-2xl font-semibold text-gray-800">{{name}}</h2>
-              <p class="text-gray-600">{{user_role.name}}</p>
-            </div>
-          </div>
+    <!-- Info Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+      
+      <!-- Personal Info -->
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-1 border-gray-200">Personal Information</h2>
+        <ul class="space-y-3 text-gray-700 text-base">
+          <li><span class="font-medium text-gray-900">Email:</span> {{ email }}</li>
+          <!-- <li><span class="font-medium text-gray-900">Username:</span> {{ username }}</li> -->
+          <li><span class="font-medium text-gray-900">Location:</span> New York, USA</li>
+        </ul>
+      </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-700 mb-2">
-                Personal Information
-              </h3>
-              <p class="text-gray-600">
-                <span class="font-medium">Email:</span> {{email}}
-              </p>
-              <p class="text-gray-600">
-                <span class="font-medium">Username:</span> {{username}}
-              </p>
-              <p class="text-gray-600">
-                <span class="font-medium">Location:</span> New York, USA
-              </p>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-gray-700 mb-2">
-                Account Information
-              </h3>
-              <p class="text-gray-600">
-                <span class="font-medium">Member Since:</span> {{member_since|humanized_date}}
-              </p>
-              <p class="text-gray-600">
-                <span class="font-medium">Last Login:</span> {{last_login|humanized_date}}
-              </p>
-            </div>
-          </div>
+      <!-- Account Info -->
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-1 border-gray-200">Account Information</h2>
+        <ul class="space-y-3 text-gray-700 text-base">
+          <li><span class="font-medium text-gray-900">Member Since:</span> {{ member_since|humanized_date }}</li>
+          <li><span class="font-medium text-gray-900">Last Login:</span> {{ last_login|humanized_date }}</li>
+        </ul>
+      </div>
+    </div>
 
-          <div class="mt-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Bio</h3>
-            <p class="text-gray-600">
-              {{bio|default:"No bio available."}}
-            </p>
-            {% comment %} <p>{{ 3.14159|round_val:2 }}  </p>            {# 3.14 #}
-            <p>{{ 10|add:5 }}    </p>                     {# 15 #}
-            <p>{{ 10|subtract:2 }}  </p>                  {# 8 #}
-            <p>{{ 4|multiply:3 }}    </p>                 {# 12 #}
-            <p>{{ 10|divide:2 }} </p>                  {# 5.0 #}</p> {% endcomment %}
-          </div>
-        </div>
-      </main>
+    <!-- Bio -->
+    <div class="mt-10">
+      <h2 class="text-xl font-semibold text-gray-800 mb-3 border-b pb-1 border-gray-200">Bio</h2>
+      <p class="text-gray-700 text-base leading-relaxed">
+        {{ bio|default:"No bio available." }}
+      </p>
     </div>
   </div>
+</main>
 
-
-  {% endblock content %}
+  </div>
+</div>
+{% endblock home %}

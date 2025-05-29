@@ -19,6 +19,15 @@ from django.http import HttpResponseRedirect
 from decouple import config
 from users.models import UserProfile    
 from django.db import transaction
+from urllib.parse import urlencode
+from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+import re
+from collections import defaultdict
+from core.models import Permission, Role 
 
 class EditProfileView(UpdateView):
     model = User
@@ -44,6 +53,9 @@ class EditProfileView(UpdateView):
         with transaction.atomic():
             form.save(commit=True)
             self.request.user.refresh_from_db()  # 🔁 This ensures profile image is updated in memory
+             # 🔍 DEBUG: Check if first_name was saved
+            print("Memory first_name:", self.request.user.first_name)
+            print("DB first_name:", User.objects.get(id=self.request.user.id).first_name)
         return redirect('profile')
     
 
@@ -106,16 +118,6 @@ def sign_up(request):
 
 
 def sign_in(request):
-    # if request.method == 'POST':
-    #     username = request.POST.get('username')
-    #     password = request.POST.get('password')
-        
-    #     user = authenticate(request, username=username, password=password)
-        
-    #     if user is not None:
-    #         login(request, user)
-    #         return redirect('home')
-    # return render(request, 'registration/login.html')
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -139,9 +141,13 @@ def sign_out(request):
     domain = config("APP_DOMAIN")
     client_id = config("APP_CLIENT_ID")
     return_to = request.build_absolute_uri('/')  # or your homepage
-    return HttpResponseRedirect(
-        f"https://{domain}/v2/logout?client_id={client_id}&returnTo={return_to}&federated"
-    )
+    params = {
+        "client_id": client_id,
+        "returnTo": return_to,
+        "federated": ""  # empty string just includes the flag
+    }
+
+    return redirect(f"https://{domain}/v2/logout?" + urlencode(params))
 
 def activate_user(request, user_id, token):
     try:
@@ -156,46 +162,32 @@ def activate_user(request, user_id, token):
         return HttpResponse('User not found')
        
 
-    
-# @user_passes_test(is_admin, login_url='no-permission')  
-# def admin_dashboard(request):
-#     users = User.objects.prefetch_related('groups').all()
-    
-#     for user in users:
-#         if user.groups.exists():
-#             user.group_name = user.groups.first().name
-#         else:
-#             user.group_name = 'No Group Assigned'
-#     return render(request, 'admin/dashboard.html', {"users":users})
 
-@user_passes_test(is_admin, login_url='permission-denied')  # ✅ custom permission page
+@user_passes_test(is_admin, login_url='permission-denied')
 def admin_dashboard(request):
     users = User.objects.select_related('custom_role__role').all()
-
     for user in users:
-        if hasattr(user, 'custom_role'):
-            user.role_name = user.custom_role.role.name
-        else:
-            user.role_name = 'No Role Assigned'
+        user.role_name = user.custom_role.role.name if hasattr(user, 'custom_role') else 'No Role Assigned'
 
-    return render(request, 'admin/dashboard.html', {"users": users})
+    paginator = Paginator(users, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
+    users_data = [
+        {
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role_name
+        } for user in users
+    ]
 
-# @user_passes_test(is_admin, login_url='permission-denied')
-# def assign_role(request, user_id):
-#     user = User.objects.get(id=user_id)
-#     form = AssignRoleForm()
-    
-#     if request.method == 'POST':
-#         form = AssignRoleForm(request.POST)
-#         if form.is_valid():
-#             role = form.cleaned_data.get('role')
-#             user.groups.clear() #Remove old roles
-#             user.groups.add(role)
-#             messages.success(request, f"User {user.username} has been assigned to the {role.name} role")
-#             return redirect('admin-dashboard')
-        
-#     return render(request, 'admin/assign_role.html', {"form" : form})
+    return render(request, 'admin/dashboard.html', {
+        "page_obj": page_obj,
+        "users_json": json.dumps(users_data, cls=DjangoJSONEncoder)
+    })
+
         
         
 @user_passes_test(is_admin, login_url='permission-denied')        
@@ -211,41 +203,54 @@ def assign_role(request, user_id):
             
             UserRole.objects.update_or_create(user=user, defaults={'role': role})
 
-            messages.success(request, f"✅ User '{user.username}' has been assigned the role: {role.name}")
+            messages.success(request, f"✅ User '{user.first_name} {user.last_name}' has been assigned the role: {role.name}")
             return redirect('admin-dashboard')
 
     return render(request, 'admin/assign_role.html', {"form": form, "user": user})
 
-        
-# @user_passes_test(is_admin, login_url='no-permission')
+
+# @user_passes_test(is_admin, login_url='permission-denied')  
 # def create_group(request):
 #     form = CreateGroupForm()
+    
 #     if request.method == 'POST':
 #         form = CreateGroupForm(request.POST)
-        
 #         if form.is_valid():
-#             group = form.save()
-#             messages.success(request, f"Group {group.name} has been created successfully")
+#             role = Role.objects.create(name=form.cleaned_data['name'])
+#             permissions = form.cleaned_data['permissions']
+#             role.permissions.set(permissions)
+
+#             messages.success(request, f"✅ Role '{role.name}' created with {permissions.count()} permission(s).")
 #             return redirect('create-group')
-        
+    
 #     return render(request, 'admin/create_group.html', {'form': form})
+def group_permissions():
+    groups = defaultdict(list)
+    for perm in Permission.objects.all():
+        # Extract "task", "project", "task detail" from permission label
+        match = re.search(r'Can \w+ (.+)', perm.label)
+        if match:
+            group = match.group(1).strip().title()  # normalize label
+            groups[group].append(perm)
+    return dict(groups)
 
-
-@user_passes_test(is_admin, login_url='permission-denied')  
 def create_group(request):
     form = CreateGroupForm()
-    
+    grouped_permissions = group_permissions()
+
     if request.method == 'POST':
         form = CreateGroupForm(request.POST)
         if form.is_valid():
             role = Role.objects.create(name=form.cleaned_data['name'])
             permissions = form.cleaned_data['permissions']
             role.permissions.set(permissions)
-
             messages.success(request, f"✅ Role '{role.name}' created with {permissions.count()} permission(s).")
             return redirect('create-group')
-    
-    return render(request, 'admin/create_group.html', {'form': form})
+
+    return render(request, 'admin/create_group.html', {
+        'form': form,
+        'grouped_permissions': grouped_permissions
+    })
 
 
 
@@ -320,3 +325,24 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
         messages.success(
             self.request, 'Password reset Successfully')
         return super().form_valid(form)
+    
+
+def redirect_to_reset_password(request):
+    domain = config("APP_DOMAIN")
+    client_id = config("APP_CLIENT_ID")
+    reset_url = f"https://dev-h4kzavebg2vdwfhp.us.auth0.com/u/reset-password/index.html?client_id={client_id}"
+    reset_url = f"https://{domain}/lo/reset?client_id={client_id}"
+    return redirect(reset_url)
+
+
+
+def user_list_view(request):
+    users = list(User.objects.select_related('custom_role__role').values(
+        'id', 'first_name', 'last_name', 'email', 'custom_role__role__name'
+    ))
+    for idx, user in enumerate(users, 1):
+        user['number'] = idx
+        user['custom_role'] = {'role': {'name': user.pop('custom_role__role__name')}}
+    return render(request, 'admin/user_list.html', {
+        'user_data': json.dumps(users, cls=DjangoJSONEncoder),
+    })

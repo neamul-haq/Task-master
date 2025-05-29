@@ -1,53 +1,115 @@
 {% extends "dashboard/dashboard.html" %}
-{% block title %}Manager Dashboard{% endblock title %}
+{% block title %}Task show Bar{% endblock title %}
 
 {% block tasks %}
 
- {% comment %} Task Table   {% endcomment %}
-<div class="bg-white rounded-xl shadow-sm mb-11">
-  <div
-    class="grid grid-cols-4 p-4 border-b border-gray-100 text-sm text-gray-500"
-  >
-    <div>TASK TITLE</div>
-    <div>PRIORITY</div>
-    <div>TEAM</div>
-    <div>CREATED AT</div>
+{% comment %} Task Table {% endcomment %}
+<div class="bg-white rounded-xl shadow-md mb-12 overflow-hidden">
+  <!-- Table Header -->
+  <div class="grid grid-cols-4 px-6 py-4 border-b border-gray-200 text-sm font-medium text-gray-600 uppercase tracking-wider bg-gray-50">
+    <div>Task Title</div>
+    <div>Priority</div>
+    <div>Team</div>
+    <div>Created</div>
   </div>
-   {% comment %} Task Items   {% endcomment %}
-  <div class="divide-y divide-gray-100">
-     {% for task in tasks  %}
-        {% comment %} Tasks  {% endcomment %}
-        <div class="grid grid-cols-4 gap-4 p-4 items-center">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-            <a href="{% url 'task-details' task.id%}">{{task.title}}</a>
-            <a href='{% url "update-task" task.id %}' class="px-2 py-1 bg-green-500">Edit</a>
-            {% comment %} <a href='{% url "delete-task" task.id %}' class="px-2 py-1 bg-red-500">Delete</a> {% endcomment %}
-             <form action="{% url 'delete-task' task.id %}" method="post">
-              {% csrf_token %}
-              <button type="submit" class="px-2 py-1 bg-red-500">Delete</button>
-             </form>
-          </div>
-          <div>
-            <span
-              class="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm"
-              >{{task.details.get_priority_display}}</span
-            >
-          </div>
-          <div class="flex -space-x-2">
-            {% for emp in task.assigned_to.all  %}
-              <div
-              class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm border-2 border-white"
-              >
-                {{emp.first_name|slice:':1'}}
-              </div>
-            {% endfor %}
-          </div>
-          <div class="text-gray-500">{{task.created_at|timesince}}</div>
-        </div>
-     {% endfor %}
 
+  {% comment %} Task Items {% endcomment %}
+  <div class="divide-y divide-gray-100">
+    {% for task in page_obj %}
+    <div class="grid grid-cols-4 gap-4 px-6 py-4 hover:bg-gray-50 transition duration-150 items-center">
+      <!-- Title -->
+      <div class="flex items-center gap-3">
+  <!-- Colored status dot based on task status -->
+        <div class="flex-shrink-0 w-2.5 h-2.5 rounded-full 
+          {% if task.status == 'COMPLETED' %} bg-green-500 
+          {% elif task.status == 'IN_PROGRESS' %} bg-yellow-500 
+          {% elif task.status == 'PENDING' %} bg-red-500 
+          {% else %} bg-gray-400 {% endif %}">
+        </div>
+
+        <!-- Task title -->
+        <div class="flex flex-col">
+          <a href="{% url 'task-details' task.id %}" class="text-base font-semibold text-gray-800 hover:text-gray-700 transition">
+            {{ task.title }}
+          </a>
+          <span class="text-xs text-gray-400">
+            Status: {{ task.status|title }}
+          </span>
+        </div>
+      </div>
+
+
+      <!-- Priority -->
+      <div>
+        {% if task.details.priority == 'L' %}
+          <span class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+            {{ task.details.get_priority_display }}
+          </span>
+        {% elif task.details.priority == 'M' %}
+          <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+            {{ task.details.get_priority_display }}
+          </span>
+        {% elif task.details.priority == 'H' %}
+          <span class="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            {{ task.details.get_priority_display }}
+          </span>
+        {% else %}
+          <span class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+            {{ task.details.get_priority_display }}
+          </span>
+        {% endif %}
+      </div>
+
+
+      <!-- Team -->
+      <div class="flex -space-x-3">
+        {% for emp in task.assigned_to.all %}
+          <div class="relative group" title="{{ emp.get_full_name }}">
+            <div class="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center text-green-800 text-sm font-semibold border-2 border-white">
+              {{ emp.first_name|slice:":1" }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Created Time -->
+      <div class="text-sm text-gray-500 flex items-center gap-1">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ task.created_at|timesince }} ago</span>
+      </div>
+
+
+    </div>
+    {% endfor %}
   </div>
+
+    <!-- Pagination -->
+    <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          ← Previous
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
+
+      <span class="text-sm text-gray-600">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          Next →
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
+    </div>
 </div>
 
 

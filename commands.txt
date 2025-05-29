@@ -1,0 +1,31 @@
+docker build --tag python-django .  #For Images
+docker run --publish 8000:8000 python-django  #For Container
+
+
+# Build the image
+docker build -t task-manager-django .
+
+# Run the container
+docker run -p 8000:8000 task-manager-django
+
+
+docker run -p 8000:8000 -v "$(pwd)/db.sqlite3:/app/db.sqlite3" -v "$(pwd)/.env:/app/.env" task-manager-django
+docker run -p 8000:8000 task-manager-django
+
+
+#when change something
+docker run -p 8000:8000 -v "$(pwd):/app" -v "$(pwd)/db.sqlite3:/app/db.sqlite3" -v "$(pwd)/.env:/app/.env" task-manager-django
+
+
+docker build -t task-manager-django .
+docker network create tasknet
+docker rm -f redis-server
+docker run -d --name redis-server --network tasknet redis:7
+docker run -p 8000:8000 --network tasknet task-manager-django
+
+
+#compose
+docker rm -f redis-server
+docker-compose down
+docker-compose up --build
+docker-compose exec web python manage.py migrate

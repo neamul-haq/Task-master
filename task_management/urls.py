@@ -20,6 +20,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 from core.views import home, no_permission , permission_denied
 from django.conf import settings
 from django.conf.urls.static import static
+from users.views import user_list_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +29,5 @@ urlpatterns = [
     path('', home, name="home"),
     path('no-permission', no_permission, name="no-permission"),
     path('permission-denied/', permission_denied, name='permission-denied'),
+    # path('api/users/', user_list_view, name='user_list_view'),
 ]+ debug_toolbar_urls() + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -46,6 +46,23 @@ INSTALLED_APPS = [
     
     'social_django',
 ]
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['first_name', 'last_name', 'email']
+SOCIAL_AUTH_CLEAN_USER_FIELDS = False
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'users.pipeline.custom_create_user',
+    'users.pipeline.save_profile',  # optional, as needed
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'users.pipeline.safe_user_details',  # 👈 use your safe version here
+)
+
+
+
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.auth0.Auth0OAuth2',
@@ -59,6 +76,16 @@ SOCIAL_AUTH_AUTH0_SECRET = config("APP_CLIENT_SECRET")
 SOCIAL_AUTH_AUTH0_SCOPE = [
     'openid', 'profile', 'email'
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis-server:6379/1",  # Redis container hostname
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 
 
@@ -104,12 +131,27 @@ WSGI_APPLICATION = 'task_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+#for postgres
+import os
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),  # 'db' is the service name in docker-compose
+        'PORT': os.getenv("DB_PORT"),
     }
 }
+
 
 
 # Password validation

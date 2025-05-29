@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: task_db
+      POSTGRES_USER: task_user
+      POSTGRES_PASSWORD: task_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tasknet
+
+  redis:
+    image: redis:7
+    container_name: redis-server
+    networks:
+      - tasknet
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    networks:
+      - tasknet
+
+volumes:
+  postgres_data:
+
+networks:
+  tasknet:

@@ -3,15 +3,25 @@
 <div class="max-w-2xl mx-auto my-12 p-8 bg-white shadow-xl rounded-xl">
     <h2 class="text-2xl font-semibold text-center text-rose-600 mb-6">Create New Role</h2>
   
-    {% if messages %}
-      <ul class="mb-4 space-y-2">
-        {% for message in messages %}
-          <li class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-2 rounded">
-            {{ message }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% if messages %}
+          <div class="fixed top-16 right-4 z-50 space-y-2">
+            {% for message in messages %}
+              <div class="px-4 py-3 rounded shadow text-white text-bold
+                {% if message.tags == 'error' %} bg-red-600
+                {% elif message.tags == 'success' %} bg-green-600
+                {% else %} bg-blue-500
+                {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+
+          <script>
+            setTimeout(() => {
+              document.querySelectorAll('.z-50').forEach(el => el.remove());
+            }, 4000);
+          </script>
+{% endif %}
   
     <form method="POST" class="space-y-6">
       {% csrf_token %}
@@ -21,38 +31,134 @@
         {{ form.name }}
       </div>
   
+  
+        <div class="space-y-6 mb-8">
+  <h3 class="text-xl font-bold text-gray-800">Select Permission Groups:</h3>
+
+  <div class="grid sm:grid-cols-2 gap-4">
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="project-all" />
       <div>
-        <button type="button" id="toggle-perms" class="mb-2 text-sm font-medium text-blue-600 hover:underline">
-          🔽 Show Permissions
-        </button>
-  
-        <div id="permissions-box" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-3 bg-gray-50 p-4 border rounded max-h-64 overflow-y-auto">
-          {% for checkbox in form.permissions %}
-            <label class="flex items-center space-x-2 text-sm text-gray-700">
-              {{ checkbox.tag }}
-              <span>{{ checkbox.choice_label }}</span>
-            </label>
-          {% endfor %}
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+          <span>Project</span>
         </div>
+        <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
       </div>
+    </label>
+
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-edit" />
+      <div>
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+           <span>Task</span>
+        </div>
+        <p class="text-sm text-gray-600">Permissions: add, update</p>
+      </div>
+    </label>
+
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-delete" />
+      <div>
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+           <span>Task</span>
+        </div>
+        <p class="text-sm text-gray-600">Permissions: delete only</p>
+      </div>
+    </label>
+
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-view" />
+      <div>
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+           <span>Task</span>
+        </div>
+        <p class="text-sm text-gray-600">Permissions: view only</p>
+      </div>
+    </label>
+
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-edit" />
+      <div>
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+          <span>Task Detail</span>
+        </div>
+        <p class="text-sm text-gray-600">Permissions: add, update, delete</p>
+      </div>
+    </label>
+
+    <label
+      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-view" />
+      <div>
+        <div class="font-medium text-gray-900 flex items-center gap-1">
+           <span>Task Detail</span>
+        </div>
+        <p class="text-sm text-gray-600">Permissions: view only</p>
+      </div>
+    </label>
+  </div>
+</div>
+
+
+      <!-- Hidden actual permissions field -->
+      <div id="hidden-permissions">
+        {% for checkbox in form.permissions %}
+          <div class="perm-field" data-label="{{ checkbox.choice_label|slugify }}">
+            <div class="hidden">
+              {{ checkbox.tag }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      
+
   
-      <button type="submit" class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">
-        ➕ Create Role
-      </button>
+      <!-- Button Group -->
+      <div class="flex justify-center gap-4 pt-4">
+        <!-- Submit -->
+        <button type="submit"
+          class="bg-gray-800 hover:bg-gray-700 text-white font-semibold px-6 py-2 rounded-md shadow transition duration-300">
+          Create Role
+        </button>
+        <!-- Cancel -->
+        <a href="{% url 'dashboard' %}"
+          class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-6 py-2 rounded-md shadow transition duration-300">
+          Cancel
+        </a>
+      </div>
     </form>
   </div>
-  
+
   <script>
-    const toggleBtn = document.getElementById("toggle-perms");
-    const permsBox = document.getElementById("permissions-box");
-  
-    toggleBtn.addEventListener("click", () => {
-      permsBox.classList.toggle("hidden");
-      toggleBtn.innerText = permsBox.classList.contains("hidden") ? "🔽 Show Permissions" : "🔼 Hide Permissions";
+  const permMap = {
+    'project-all': ['can_add_project', 'can_view_project', 'can_change_project', 'can_delete_project'],
+    'task-edit': ['can_add_task', 'can_change_task'],
+    'task-delete': ['can_delete_task'],
+    'task-view': ['can_view_task'],
+    'taskdetail-edit': ['can_add_taskdetail', 'can_change_taskdetail', 'can_delete_taskdetail'],
+    'taskdetail-view': ['can_view_taskdetail']
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".group-checkbox").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const group = cb.dataset.perms;
+        const perms = permMap[group] || [];
+        perms.forEach(code => {
+          const checkbox = document.querySelector(`#hidden-permissions .perm-field[data-label="${code}"] input`);
+          if (checkbox) checkbox.checked = cb.checked;
+        });
+      });
     });
-  </script>
-  
+  });
+</script>
+
   
   
 {% endblock content %}
-

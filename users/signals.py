@@ -58,10 +58,11 @@ def assign_role_on_first_login(sender, user, request, **kwargs):
 
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
-    with transaction.atomic():
         if created:
             UserProfile.objects.create(user=instance)
         else:
             # Ensure profile exists before saving
             if hasattr(instance, 'userprofile'):
                 instance.userprofile.save()
+
+

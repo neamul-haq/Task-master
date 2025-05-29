@@ -2,153 +2,135 @@
 {% load task_tags %}
 {% block content %}
         
-  <div class='w-[1450px] mx-auto'>
-    {% comment %} Stats Grid   {% endcomment %}
-    <div class="grid grid-cols-4 gap-6 my-8">
-      {% comment %} Total Task   {% endcomment %}
-     <a href="{% url 'can_view_task' %}?type=all">
-       <div class="bg-white rounded-xl p-6 shadow-sm">
-         <h3 class="text-sm font-medium text-gray-500 mb-4">TOTAL TASK</h3>
-         <div class="flex justify-between items-start">
-           <div>
+<div class="max-w-[1450px] mx-auto px-4">
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-10">
+    
+    {% comment %} === Total Tasks === {% endcomment %}
+    {% if user_role.name != 'User' %}<a href="{% url 'can_view_task' %}?type=all">{% endif %}
+    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition duration-200 hover:scale-[1.02]">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 mb-2">TOTAL TASK</h3>
+          <p class="text-3xl font-bold text-gray-800">
             {% if user_role.name == 'User' %}
-              <p class="text-3xl font-semibold mb-1">{% task_count_by_status user %}</p>
+              {% task_count_by_status user %}
             {% else %}
-              <p class="text-3xl font-semibold mb-1">{{ counts.total }}</p>
+              {{ counts.total }}
             {% endif %}
+          </p>
+          <p class="text-sm text-gray-400 mt-1">11 last month</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+          <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+          </svg>
+        </div>
+      </div>
+    </div>
+    {% if user_role.name != 'User' %}</a>{% endif %}
 
-            <p class="text-gray-500 text-sm">11 last month</p>
-           </div>
-           <div class="bg-blue-100 p-3 rounded-full">
-             <svg
-               xmlns="http://www.w3.org/2000/svg"
-               fill="none"
-               viewBox="0 0 24 24"
-               stroke="currentColor"
-               class="w-6 h-6 text-blue-600"
-             >
-               <path
-                 stroke-linecap="round"
-                 stroke-linejoin="round"
-                 stroke-width="2"
-                 d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-               />
-             </svg>
-           </div>
-         </div>
-       </div>
-     </a>
-      {% comment %} Completed Task   {% endcomment %}
-     <a href="{% url 'can_view_task' %}?type=completed">
-       <div class="bg-white rounded-xl p-6 shadow-sm">
-       <h3 class="text-sm font-medium text-gray-500 mb-4">
-         COMPLETED TASK
-       </h3>
-       <div class="flex justify-between items-start">
-         <div>
-          {% if user_role.name == 'User' %}
-            <p class="text-3xl font-semibold mb-1">{% task_count_by_status user "COMPLETED"%}</p>
-          {% else %}
-            <p class="text-3xl font-semibold mb-1">{{ counts.total }}</p>
-          {% endif %}
-           <p class="text-gray-500 text-sm">11 last month</p>
-         </div>
-         <div class="bg-green-100 p-3 rounded-full">
-           <svg
-             xmlns="http://www.w3.org/2000/svg"
-             fill="none"
-             viewBox="0 0 24 24"
-             stroke-width="2"
-             stroke="currentColor"
-             class="w-6 h-6 text-green-600"
-           >
-             <path
-               stroke-linecap="round"
-               stroke-linejoin="round"
-               d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-             />
-           </svg>
-         </div>
-       </div>
-       </div>
-     </a>
-      {% comment %} Task In Progress   {% endcomment %}
-     <a href="{% url 'can_view_task' %}?type=in-progress">
-         <div class="bg-white rounded-xl p-6 shadow-sm">
-           <h3 class="text-sm font-medium text-gray-500 mb-4">
-             TASK IN PROGRESS
-           </h3>
-           <div class="flex justify-between items-start">
-             <div>
-              {% if user_role.name == 'User' %}
-                <p class="text-3xl font-semibold mb-1">{% task_count_by_status user "IN_PROGRESS"%}</p>
-              {% else %}
-                <p class="text-3xl font-semibold mb-1">{{ counts.in_progress }}</p>
-              {% endif %}
-               <p class="text-gray-500 text-sm">11 last month</p>
-             </div>
-             <div class="bg-yellow-100 p-3 rounded-full">
-               <svg
-                 xmlns="http://www.w3.org/2000/svg"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke-width="2"
-                 stroke="currentColor"
-                 class="w-6 h-6 text-yellow-600"
-               >
-                 <path
-                   stroke-linecap="round"
-                   stroke-linejoin="round"
-                   d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                 />
-               </svg>
-             </div>
-           </div>
-         </div>
-     </a>
-     {% comment %} TODOS   {% endcomment %}
-     <a href="{% url 'can_view_task' %}?type=pending">
-       <div class="bg-white rounded-xl p-6 shadow-sm">
-         <h3 class="text-sm font-medium text-gray-500 mb-4">PENDING TASKS</h3>
-         <div class="flex justify-between items-start">
-           <div>
-              {% if user_role.name == 'User' %}
-                <p class="text-3xl font-semibold mb-1">{% task_count_by_status user "PENDING"%}</p>
-              {% else %}
-                <p class="text-3xl font-semibold mb-1">{{ counts.pending }}</p>
-              {% endif %}
-             <p class="text-gray-500 text-sm">11 last month</p>
-           </div>
-           <div class="bg-purple-100 p-3 rounded-full">
-             <svg
-               xmlns="http://www.w3.org/2000/svg"
-               fill="none"
-               viewBox="0 0 24 24"
-               stroke="currentColor"
-               class="w-6 h-6 text-purple-600"
-             >
-               <path
-                 stroke-linecap="round"
-                 stroke-linejoin="round"
-                 stroke-width="2"
-                 d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-               />
-             </svg>
-           </div>
-         </div>
-       </div>
-     </a>
-   </div>
-   <div>
-     {% if messages %}
-         {% for message in  messages%}
-             <div class="px-2 py-1 {% if message.tags == 'success' %}bg-green-500{% endif %}">{{message}}</div>
-         {% endfor %}
-     {% endif %}
- </div>
-   {% block tasks %}
-   
-   {% endblock tasks %}
+    {% comment %} === Completed Tasks === {% endcomment %}
+    {% if user_role.name != 'User' %}<a href="{% url 'can_view_task' %}?type=completed">{% endif %}
+    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition duration-200 hover:scale-[1.02]">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 mb-2">COMPLETED TASK</h3>
+          <p class="text-3xl font-bold text-gray-800">
+            {% if user_role.name == 'User' %}
+              {% task_count_by_status user "COMPLETED" %}
+            {% else %}
+              {{ counts.completed }}
+            {% endif %}
+          </p>
+          <p class="text-sm text-gray-400 mt-1">11 last month</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-full">
+          <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12.75 11.25 15 15 9.75..." />
+          </svg>
+        </div>
+      </div>
+    </div>
+    {% if user_role.name != 'User' %}</a>{% endif %}
+
+    {% comment %} === In Progress Tasks === {% endcomment %}
+    {% if user_role.name != 'User' %}<a href="{% url 'can_view_task' %}?type=in_progress">{% endif %}
+    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition duration-200 hover:scale-[1.02]">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 mb-2">TASK IN PROGRESS</h3>
+          <p class="text-3xl font-bold text-gray-800">
+            {% if user_role.name == 'User' %}
+              {% task_count_by_status user "IN_PROGRESS" %}
+            {% else %}
+              {{ counts.in_progress }}
+            {% endif %}
+          </p>
+          <p class="text-sm text-gray-400 mt-1">11 last month</p>
+        </div>
+        <div class="bg-yellow-100 p-3 rounded-full">
+          <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6v6h4.5m4.5 0..." />
+          </svg>
+        </div>
+      </div>
+    </div>
+    {% if user_role.name != 'User' %}</a>{% endif %}
+
+    {% comment %} === Pending Tasks === {% endcomment %}
+    {% if user_role.name != 'User' %}<a href="{% url 'can_view_task' %}?type=pending">{% endif %}
+    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition duration-200 hover:scale-[1.02]">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 mb-2">PENDING TASKS</h3>
+          <p class="text-3xl font-bold text-gray-800">
+            {% if user_role.name == 'User' %}
+              {% task_count_by_status user "PENDING" %}
+            {% else %}
+              {{ counts.pending }}
+            {% endif %}
+          </p>
+          <p class="text-sm text-gray-400 mt-1">11 last month</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-full">
+          <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+          </svg>
+        </div>
+      </div>
+    </div>
+    {% if user_role.name != 'User' %}</a>{% endif %}
   </div>
+
+  <!-- Messages -->
+{% if messages %}
+          <div class="fixed top-16 right-4 z-50 space-y-2">
+            {% for message in messages %}
+              <div class="px-4 py-3 rounded shadow text-white text-bold
+                {% if message.tags == 'error' %} bg-red-600
+                {% elif message.tags == 'success' %} bg-green-600
+                {% else %} bg-blue-500
+                {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+
+          <script>
+            setTimeout(() => {
+              document.querySelectorAll('.z-50').forEach(el => el.remove());
+            }, 4000);
+          </script>
+{% endif %}
+
+  <!-- Block: Tasks -->
+  {% block tasks %}{% endblock tasks %}
+</div>
+
 
 {% endblock content %}

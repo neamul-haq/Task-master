@@ -1,67 +1,71 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}" />
-  </head>
-  <body>
-    <header class="bg-white shadow-md">
-      <nav class="container mx-auto px-6 py-3">
-        <div class="flex justify-between items-center">
-          <a href="{% url 'home' %}" class="text-xl font-bold text-gray-800"
-            >Task-Manage</a
-          >
-          <div class="hidden md:flex space-x-4">
-            <a
-              href="{% url 'admin-dashboard' %}"
-              class="text-gray-600 hover:text-gray-800"
-              >Dashboard</a
-            >
-            <a href="{% url 'can_view_task' %}" class="text-gray-600 hover:text-gray-800" >Tasks</a>
-            <a href="{% url 'view-project' %}" class="text-gray-600 hover:text-gray-800" >Projects</a>
-            {% comment %} <a href="{% url 'group-list' %}" class="text-gray-600 hover:text-gray-800"
-              >Groups</a
-            > {% endcomment %}
-            {% if user_role.name == "Admin" %}
-              <a
-                href="{% url 'create-group' %}"
-                class="text-gray-600 hover:text-gray-800"
-                >Create Group</a
-              >
-            {% endif %}
+{% extends "base.html" %}
 
-          </div>
-          <div class="flex items-center">
-            <div class="relative">
-              <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button
-                  class="block px-4 py-2 text-sm text-white bg-blue-500"
-                >
-                  Logout
-                </button>
-              </form>
-            </div>
-            <a
-              href="{% url 'profile' %}"
-              class="bg-blue-500 block px-4 py-2 text-sm text-white rounded ml-3"
-              >Profile</a
-            > 
-          </div>
-        </div>
-        
-      </nav>
-    </header>
+{% block content %}
+<div id="user-table" class="container mx-auto p-6" v-cloak>
+  <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <h2 class="text-2xl font-semibold text-gray-800">User Management</h2>
+      <p class="text-sm text-gray-500">Manage roles and access levels</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-300 rounded-lg border border-gray-200">
+        <thead class="bg-gray-100 rounded-t-lg">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide rounded-tl-lg">#</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</th>
+            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">User ID</th> -->
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Current Role</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide rounded-tr-lg">Action</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for user in page_obj %}
+          <tr class="hover:bg-blue-50 transition duration-200 cursor-pointer">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">{{ forloop.counter }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+              {{ user.first_name }} {{ user.last_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ user.email }}</td>
+            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ user.id }}</td> -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ user.custom_role.role.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <a href="{% url 'assign-role' user.id %}"
+                class="inline-block bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition">
+                Change Role
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-    <main>
-      {% block content %}
-        {% include "admin/user_list.html" %}
-      {% endblock content %}
 
-    </main>
+    <!-- Pagination -->
+    <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          ← Previous
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
 
-  </body>
-</html>
+      <span class="text-sm text-gray-600">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          Next →
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -41,7 +41,7 @@
             {% endfor %}
           </select>
           <button
-            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-600"
             type="submit"
           >
             Change Status
@@ -89,22 +89,27 @@
 
             </div>
           </div>
-          <div>
-            <br>
-            <a href='{% url "update-task" task.id %}' class="px-2 py-1 bg-green-500">Edit Task</a>
-            <br>
-            {% comment %} <a href='{% url "delete-task" task.id %}' class="px-2 py-1 bg-red-500">Delete</a> {% endcomment %}
-             <form action="{% url 'delete-task' task.id %}" method="post">
-              {% csrf_token %}
-                <button
-                class="px-4 py-2 mt-3 bg-red-500 text-white rounded-md hover:bg-red-600"
-                type="submit"
-              >
-                Delete Task
-              </button>
-             </form>
-            
-          </div>
+          {% if user_role.name != 'User' %}
+
+            <div class="mt-6">
+              <div class="flex gap-4 items-center">
+                <a href="{% url 'update-task' task.id %}"
+                  class="inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                  ✏️ Edit Task
+                </a>
+
+                <form action="{% url 'delete-task' task.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                    🗑️ Delete Task
+                  </button>
+                </form>
+              </div>
+            </div>
+
+          {% endif %}
+
         </div>
       </div>
 

@@ -345,7 +345,12 @@ from django.utils.decorators import method_decorator
 from django.views.generic.base import ContextMixin
 from django.views.generic import ListView, DetailView, UpdateView
 from core.models import UserRole
-
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from django.core.cache import cache
+from datetime import timedelta
+from django.utils import timezone
+from django.core.cache import cache
 # --- Role checkers using Custom Model Manager ---
 def get_user_role(user):
     return UserRole.objects.get_role_name(user)
@@ -357,39 +362,69 @@ def require_custom_permission(permission_code):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
             if not has_custom_permission(request.user, permission_code):
-                return redirect('permission-denied')
+                messages.error(request, "⚠️You do not have permission to access this page.")
+                return redirect(request.META.get('HTTP_REFERER', 'home'))  # or redirect to any safe default
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
 
 # --- Views ---
+
+def get_task_context(task_type, page_number):
+    tasks_cache_key = f"task_list_{task_type}"
+    counts_cache_key = "task_counts"
+    cache_timeout = 60 * 5  # 5 minutes
+
+    # Get tasks from cache or DB
+    tasks = cache.get(tasks_cache_key)
+    if not tasks:
+        print("🚨 DB hit for task list")
+
+        base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
+        if task_type == 'completed':
+            tasks = list(base_query.completed())
+        elif task_type == 'in_progress':
+            tasks = list(base_query.in_progress())
+        elif task_type == 'pending':
+            tasks = list(base_query.pending())
+        else:
+            tasks = list(base_query.all())
+
+        cache.set(tasks_cache_key, tasks, timeout=cache_timeout)
+    else:
+        print("✅ Task list from cache")
+
+    # Get counts from cache or DB
+    counts = cache.get(counts_cache_key)
+    if not counts:
+        print("🚨 DB hit for counts")
+        counts = {
+            'total': Task.objects.count(),
+            'completed': Task.objects.completed().count(),
+            'in_progress': Task.objects.in_progress().count(),
+            'pending': Task.objects.pending().count(),
+        }
+        cache.set(counts_cache_key, counts, timeout=cache_timeout)
+    else:
+        print("✅ Counts from cache")
+
+    paginator = Paginator(tasks, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "counts": counts,
+        "task_type": task_type,
+    }
+    return context
+
+
 @user_passes_test(lambda u: get_user_role(u) == 'Manager', login_url='permission-denied')
 def manager_dashboard(request):
-    type = request.GET.get('type', 'all')
-
-    counts = {
-        'total': Task.objects.count(),
-        'completed': Task.objects.completed().count(),
-        'in_progress': Task.objects.in_progress().count(),
-        'pending': Task.objects.pending().count(),
-    }   
-
-
-    base_query = Task.objects.select_related('details').prefetch_related('assigned_to')
-    print(base_query.query)
-    tasks = base_query.all()
-
-    if type == 'completed':
-        tasks = Task.objects.completed()
-    elif type == 'in-progress':
-        tasks = Task.objects.in_progress()
-    elif type == 'pending':
-        tasks = Task.objects.pending()
-
-    return render(request, "dashboard/manager_dashboard.html", {
-        "tasks": tasks,
-        "counts": counts,
-    })
+    task_type = request.GET.get('type', 'all')
+    page = int(request.GET.get('page', 1))
+    context = get_task_context(task_type, page)
+    return render(request, "dashboard/manager_dashboard.html", context)
 
 @user_passes_test(lambda u: get_user_role(u) == 'User', login_url='permission-denied')
 def employee_dashboard(request):
@@ -419,27 +454,24 @@ def create_task(request):
         "task_detail_form": task_detail_form
     })
 
-class CreateTask(ContextMixin, View):
-    required_permission = 'can_add_task'
-    login_url = 'sign-in'
-    template_name = 'task_form.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not has_custom_permission(request.user, self.required_permission):
-            return redirect('permission-denied')
-        return super().dispatch(request, *args, **kwargs)
+@method_decorator(require_custom_permission('can_add_task'), name='dispatch')
+class CreateTask(ContextMixin, View):
+    template_name = 'task_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['task_form'] = TaskModelForm
-        context['task_detail_form'] = TaskDetailModelForm
+        employees = User.objects.all()
+        context['task_form'] = TaskForm(employees=employees)
+        context['task_detail_form'] = TaskDetailModelForm()
         return context
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):
-        task_form = TaskModelForm(request.POST)
+        employees = User.objects.all()
+        task_form = TaskForm(request.POST, employees=employees)
         task_detail_form = TaskDetailModelForm(request.POST)
 
         if task_form.is_valid() and task_detail_form.is_valid():
@@ -447,8 +479,14 @@ class CreateTask(ContextMixin, View):
             task_detail = task_detail_form.save(commit=False)
             task_detail.task = task
             task_detail.save()
-            messages.success(request, "Task Created Successfully")
-        return redirect('can_add_task')
+            messages.success(request, "✅ Task Created Successfully")
+            return redirect('can_add_task')
+        else:
+            messages.error(request, "❌ There was an error creating the task.")
+            return render(request, self.template_name, {
+                'task_form': task_form,
+                'task_detail_form': task_detail_form
+            })
 
 @login_required
 @require_custom_permission("can_change_task")
@@ -511,32 +549,17 @@ def delete_task(request, id):
         messages.success(request, 'Task Deleted Successfully')
     else:
         messages.error(request, 'Something Went Wrong')
-    return redirect('manager-dashboard')
+    return redirect('can_view_task')
+
+from django.core.cache import cache
 
 @require_custom_permission("can_view_task")
 def view_task(request):
-    type = request.GET.get('type', 'all')
+    task_type = request.GET.get('type', 'all')
+    page = int(request.GET.get('page', 1))
+    context = get_task_context(task_type, page)
+    return render(request, "show_task.html", context)
 
-    counts = {
-        'total': Task.objects.count(),
-        'completed': Task.objects.completed().count(),
-        'in_progress': Task.objects.in_progress().count(),
-        'pending': Task.objects.pending().count(),
-    }
-
-    if type == 'completed':
-        tasks = Task.objects.completed()
-    elif type == 'in-progress':
-        tasks = Task.objects.in_progress()
-    elif type == 'pending':
-        tasks = Task.objects.pending()
-    else:
-        tasks = Task.objects.all()
-
-    return render(request, "show_task.html", {
-        "tasks": tasks,
-        "counts": counts,
-    })
 
 @method_decorator([login_required, require_custom_permission("can_view_project")], name='dispatch')
 class ViewProject(ListView):
@@ -589,8 +612,8 @@ def dashboard(request):
     elif role == 'User':
         user = request.user
         tasks = Task.objects.assigned_to(user)
-        todays_tasks = tasks.filter(status__in=['PENDING', 'IN_PROGRESS']).order_by('due_date')
-
+        tasks = tasks.filter(status__in=['PENDING', 'IN_PROGRESS']).order_by('due_date')
+        todays_tasks = tasks.filter(due_date=timezone.now().date())
         return render(request, 'dashboard/user_dashboard.html', {
             'todays_tasks': todays_tasks,
             'tasks': tasks,

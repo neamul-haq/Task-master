@@ -1,15 +1,72 @@
 {% extends "base.html" %}
-{% block content %}
-    <div class='mx-auto w-1/2 my-9'>
+{% block title %} Edit Profile {% endblock title %}
+{% block home %}
+<div class="bg-gray-100">
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg border-r h-screen">
+      <div class="p-6 border-b">
+        <h2 class="text-xl font-bold text-gray-800">Dashboard</h2>
+      </div>
+      <nav class="mt-4 space-y-1">
+        <a href="{% url 'profile' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Profile</a>
+        <a href="{% url 'edit-profile' %}" class="block px-6 py-3 bg-gray-100 text-gray-900 font-medium rounded-r-full">Edit Profile</a>
+        <a href="{% url 'logout' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Log Out</a>
+        {# <a href="{% url 'reset-password-auth0' %}" class="block px-6 py-3 hover:bg-gray-50 text-gray-700 rounded-r-full">Change Password</a> #}
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-10">
+      <div class="max-w-2xl mx-auto bg-white shadow-md rounded-2xl p-8">
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Edit Profile</h1>
+
+        <!-- Messages -->
         {% if messages %}
-            {% for message in messages %}
-                <div class="px-2 py-1 {% if message.tags == 'success' %}bg-green-500{% endif %} ">{{message}}</div>
-            {% endfor %}
+          {% for message in messages %}
+            <div class="mb-4 px-4 py-2 rounded text-sm 
+                        {% if message.tags == 'success' %}
+                          bg-green-100 text-green-800
+                        {% elif message.tags == 'error' %}
+                          bg-red-100 text-red-800
+                        {% else %}
+                          bg-gray-100 text-gray-700
+                        {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
         {% endif %}
-        <form method='POST' enctype='multipart/form-data'>
-            {% csrf_token %}
-            {{ form }}
-            <button class='bg-blue-500 px-2 py-1 rounded text-white mt-3' type="submit">Update Profile</button>
+
+        <!-- Profile Form -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+          {% csrf_token %}
+          {% for field in form %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <p class="text-sm text-red-600 mt-1">{{ field.errors.0 }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <!-- Button Group -->
+      <div class="flex justify-center gap-4 pt-4">
+        <!-- Submit -->
+        <button type="submit"
+          class="bg-gray-800 hover:bg-gray-700 text-white font-semibold px-6 py-2 rounded-md shadow transition duration-300">
+          Edit
+        </button>
+        <!-- Cancel -->
+        <a href="{% url 'dashboard' %}"
+          class="bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 px-6 py-2 rounded-md shadow transition duration-300">
+          Cancel
+        </a>
+      </div>
         </form>
-    </div>
-{% endblock content %}
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock home %}

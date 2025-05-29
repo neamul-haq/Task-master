@@ -1,23 +1,9 @@
 from django import forms
 from tasks.models import Task, TaskDetail
+from django.forms import DateInput
 
 # Django Form
 
-
-class TaskForm(forms.Form):
-    title = forms.CharField(max_length=250, label="Task Title")
-    description = forms.CharField(
-        widget=forms.Textarea, label='Task Description')
-    due_date = forms.DateField(widget=forms.SelectDateWidget, label="Due Date")
-    assigned_to = forms.MultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple, choices=[], label='Assigned To')
-
-    def __init__(self, *args, **kwargs):
-        # print(args, kwargs)
-        employees = kwargs.pop("employees", [])
-        super().__init__(*args, **kwargs)
-        self.fields['assigned_to'].choices = [
-            (emp.id, emp.name) for emp in employees]
 
 
 class StyledFormMixin:
@@ -40,7 +26,7 @@ class StyledFormMixin:
                 field.widget.attrs.update({
                     'class': f"{self.default_classes} resize-none",
                     'placeholder':  f"Enter {field.label.lower()}",
-                    'rows': 5
+                    'rows': 3
                 })
             elif isinstance(field.widget, forms.SelectDateWidget):
                 # print("Inside Date")
@@ -60,12 +46,47 @@ class StyledFormMixin:
 
 
 # Django Model Form
+# class TaskForm(StyledFormMixin,forms.Form):
+#     title = forms.CharField(max_length=250, label="Task Title")
+#     description = forms.CharField(
+#         widget=forms.Textarea, label='Task Description')
+#     due_date = forms.DateField(widget=forms.SelectDateWidget, label="Due Date")
+#     assigned_to = forms.MultipleChoiceField(
+#         widget=forms.SelectMultiple, choices=[], label='Assigned To')
+
+
+#     def __init__(self, *args, **kwargs):
+#         employees = kwargs.pop("employees", [])
+#         super().__init__(*args, **kwargs)
+#         self.fields['assigned_to'].choices = [
+#             (emp.id, emp.get_full_name() or emp.username) for emp in employees
+#         ]
+
+class TaskForm(StyledFormMixin, forms.ModelForm):
+    due_date = forms.DateField(
+        widget=DateInput(
+            attrs={
+                'type': 'date',
+                'class': StyledFormMixin.default_classes  # Optional: apply custom styling
+            }
+        ),
+        label="Due Date"
+    )
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'due_date', 'assigned_to']
+
+    def __init__(self, *args, **kwargs):
+        employees = kwargs.pop("employees", [])
+        super().__init__(*args, **kwargs)
+        self.fields['assigned_to'].queryset = employees
+
 
 
 class TaskModelForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'assigned_to', 'status']
+        fields = ['title', 'description', 'project', 'due_date', 'assigned_to', 'status']
         widgets = {
             'due_date': forms.SelectDateWidget,
             'assigned_to': forms.CheckboxSelectMultiple

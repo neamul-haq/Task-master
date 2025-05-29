@@ -1,0 +1,6 @@
+task_env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db

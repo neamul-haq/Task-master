@@ -7,7 +7,7 @@ class Permission(models.Model):
     label = models.CharField(max_length=150)
 
     def __str__(self):
-        return self.label
+        return self.code
 
 class Role(models.Model):
     name = models.CharField(max_length=50, unique=True)

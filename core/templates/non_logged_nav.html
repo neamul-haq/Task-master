@@ -1,13 +1,10 @@
+{% load static %}
 <header class="bg-white shadow-md">
     <nav class="container mx-auto px-6 py-3">
       <div class="flex justify-between items-center">
-        <div class="text-xl font-bold text-gray-800">TaskMaster</div>
-        {% comment %} <div class="hidden md:flex space-x-4">
-          <a href="#" class="text-gray-600 hover:text-gray-800">Features</a>
-          <a href="#" class="text-gray-600 hover:text-gray-800">Pricing</a>
-          <a href="#" class="text-gray-600 hover:text-gray-800">About</a>
-          <a href="#" class="text-gray-600 hover:text-gray-800">Contact</a>
-        </div> {% endcomment %}
+        <a href="{% url 'home' %}">
+          <img src="{% static 'images/taskmanager.png' %}" alt="Logo" class="h-8 w-auto" />
+        </a>
         <div class="md:hidden">
           <button
             id="menu-toggle"
@@ -32,40 +29,20 @@
         <div class="flex gap-1">
           <!-- Sign In -->
           <a
-          href="{% url 'social:begin' 'auth0' %}?prompt=login"
-          class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+          href="{% url 'social:begin' 'auth0' %}?prompt=login&scope=openid profile email"
+          class="hidden md:block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-300"
           >
           Sign In
           </a>
 
           <!-- Sign Up -->
           <a
-          href="{% url 'social:begin' 'auth0' %}?prompt=login&screen_hint=signup"
-          class="hidden md:block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+          href="{% url 'social:begin' 'auth0' %}?screen_hint=signup"
+          class="hidden md:block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
           >
           Sign Up
           </a>
         </div>
-      </div>
-      <div id="mobile-menu" class="md:hidden hidden mt-4">
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >Features</a
-        >
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >Pricing</a
-        >
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >About</a
-        >
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >Contact</a
-        >
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >Sign In</a
-        >
-        <a href="#" class="block py-2 text-gray-600 hover:text-gray-800"
-          >Sign Up</a
-        >
       </div>
     </nav>
   </header>
