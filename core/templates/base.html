@@ -24,7 +24,7 @@
     [v-cloak] { display: none; }
   </style>
 
-  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/vue@3.5.16/dist/vue.global.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
@@ -129,22 +129,61 @@
     </div>
   </div>
 
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() {
-        return {
-          sidebarOpen: false,
-          tasksDropdownOpen: false,
-          settingsDropdownOpen: false
-        };
+  <script id="users-data" type="application/json">
+  {{ users_json|safe }}
+</script>
+
+<script>
+  const { createApp } = Vue;
+  createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+      return {
+        sidebarOpen: false,
+        tasksDropdownOpen: false,
+        settingsDropdownOpen: false,
+
+        // Add user table state here 👇
+        users: (() => {
+          const el = document.getElementById('users-data');
+          try {
+            return el ? JSON.parse(el.textContent) : [];
+          } catch (e) {
+            console.warn('Failed to parse users data', e);
+            return [];
+          }
+        })(),
+
+        search: '',
+        currentPage: 1,
+        perPage: 10
+      };
+    },
+    computed: {
+      filteredUsers() {
+        const s = this.search.toLowerCase();
+        return this.users.filter(user =>
+          user.first_name.toLowerCase().includes(s) ||
+          user.last_name.toLowerCase().includes(s) ||
+          user.email.toLowerCase().includes(s) ||
+          user.role.toLowerCase().includes(s)
+        );
       },
-      methods: {
-        toggleSidebar() {
-          this.sidebarOpen = !this.sidebarOpen;
-        }
+      totalPages() {
+        return Math.ceil(this.filteredUsers.length / this.perPage);
+      },
+      paginatedUsers() {
+        const start = (this.currentPage - 1) * this.perPage;
+        return this.filteredUsers.slice(start, start + this.perPage);
       }
-    }).mount('#app');
-  </script>
+    },
+    methods: {
+      toggleSidebar() {
+        this.sidebarOpen = !this.sidebarOpen;
+      }
+    }
+  }).mount('#app');
+</script>
+
 </body>
 </html>

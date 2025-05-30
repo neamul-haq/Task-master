@@ -161,17 +161,26 @@ def activate_user(request, user_id, token):
     except User.DoesNotExist:
         return HttpResponse('User not found')
        
+@login_required
+def vue_user_list(request):
+    users = User.objects.all()
+    users_data = [
+        {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email
+        } for user in users
+    ]
+    return render(request, 'admin/user_list.html', {
+        'users_json': json.dumps(users_data, cls=DjangoJSONEncoder)
+    })
 
-
+@user_passes_test(is_admin, login_url='permission-denied')
 @user_passes_test(is_admin, login_url='permission-denied')
 def admin_dashboard(request):
     users = User.objects.select_related('custom_role__role').all()
     for user in users:
         user.role_name = user.custom_role.role.name if hasattr(user, 'custom_role') else 'No Role Assigned'
-
-    paginator = Paginator(users, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
 
     users_data = [
         {
@@ -184,7 +193,6 @@ def admin_dashboard(request):
     ]
 
     return render(request, 'admin/dashboard.html', {
-        "page_obj": page_obj,
         "users_json": json.dumps(users_data, cls=DjangoJSONEncoder)
     })
 
