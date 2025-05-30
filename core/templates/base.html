@@ -5,116 +5,102 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock title %}</title>
+
   <link rel="stylesheet" href="{% static 'css/output.css' %}">
-  <script src="https://unpkg.com/vue@3"></script>
-
-  <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- jQuery (required) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-      $(document).ready(function() {
-          $('#id_assigned_to').select2({
-              placeholder: "Select team members",
-              width: '100%',
-              allowClear: true
-          });
-      });
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter&family=Noto+Sans+Bengali&display=swap" rel="stylesheet" />
+
   <style>
     body {
       font-family: "Inter", sans-serif;
     }
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.3s ease;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+    [v-cloak] { display: none; }
   </style>
+
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+    $(document).ready(function() {
+        $('#id_assigned_to').select2({
+            placeholder: "Select team members",
+            width: '100%',
+            allowClear: true
+        });
+    });
+  </script>
 </head>
-<body class="font-sans bg-gray-100">
-  <div id="app">
+<body class="bg-gray-50 text-gray-900">
+  <div id="app" class="flex">
     <!-- Sidebar -->
-    <div v-show="sidebarOpen" class="fixed top-0 left-0 h-full w-64 bg-white-800 text-gray p-6 shadow-lg z-50 transition-all duration-300">
-      <div class="flex justify-end">
-        <button @click="toggleSidebar" class="text-xl">✖</button>
+    <aside v-show="sidebarOpen" class="fixed top-0 left-0 h-full w-64 bg-white border-r shadow-md p-6 z-50 transition-transform duration-300">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">Menu</h2>
+        <button @click="toggleSidebar" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Close</button>
       </div>
-      
-        <div class="p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4">Menu</h2>
+      <nav>
+        <ul class="space-y-4">
+          <li><a href="{% url 'home' %}" class="block px-4 py-2 rounded hover:bg-gray-100">Home</a></li>
 
-          <ul class="space-y-3">
-            <li>
-              <a href="{% url 'home' %}" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                🏠 Home
-              </a>
-            </li>
+          {% if not request.user.is_authenticated %}
+            <li><a href="{% url 'social:begin' 'auth0' %}?prompt=login&scope=openid profile email" class="block px-4 py-2 rounded hover:bg-gray-100">Sign In</a></li>
+            <li><a href="{% url 'social:begin' 'auth0' %}?screen_hint=signup" class="block px-4 py-2 rounded hover:bg-gray-100">Sign Up</a></li>
+          {% else %}
+            <li><a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded hover:bg-gray-100">Dashboard</a></li>
 
-            {% if not request.user.is_authenticated %}
+            {% if user_role.name == 'Admin' or user_role.name == 'Manager' %}
               <li>
-                <a href="{% url 'social:begin' 'auth0' %}?prompt=login&scope=openid profile email" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  🔐 Sign In
-                </a>
-                <a href="{% url 'social:begin' 'auth0' %}?screen_hint=signup" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  📝 Sign Up
-                </a>
-              </li>
-            {% else %}
-              <li>
-                <a href="{% url 'dashboard' %}" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  📊 Dashboard
-                </a>
-              </li>
-
-              {% if user_role.name == 'Admin' %}
-              <li>
-                <a href="{% url 'can_view_task' %}" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  ✅ View Tasks
-                </a>
-              </li>
-              {% endif %}
-
-              {% if user_role.name == "Manager" or user_role.name == "Admin" %}
-              <li>
-                <a href="{% url 'can_add_task' %}" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  ➕ Create Task
-                </a>
-              </li>
-              {% endif %}
-
-              {% if user_role.name == "Admin" %}
-              <li>
-                <a href="{% url 'create-group' %}" class="block text-gray-700 hover:bg-white rounded-r-full p-1 transition">
-                  🛠 Create Role
-                </a>
-              </li>
-              {% endif %}
-
-              <li>
-                <a href="{% url 'logout' %}" class="block text-red-600 hover:bg-white rounded-r-full p-1 transition">
-                  🚪 Logout
-                </a>
+                <button @click="tasksDropdownOpen = !tasksDropdownOpen" class="w-full text-left px-4 py-2 rounded hover:bg-gray-100 font-medium">
+                  Tasks
+                </button>
+                <transition name="fade">
+                  <ul v-show="tasksDropdownOpen" class="ml-4 mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded shadow py-2 px-2">
+                    {% if user_role.name == 'Admin' %}
+                      <li><a href="{% url 'can_view_task' %}" class="block px-3 py-1 rounded hover:bg-gray-100">View Tasks</a></li>
+                    {% endif %}
+                    {% if user_role.name == 'Manager' or user_role.name == 'Admin' %}
+                      <li><a href="{% url 'can_add_task' %}" class="block px-3 py-1 rounded hover:bg-gray-100">Create Task</a></li>
+                    {% endif %}
+                  </ul>
+                </transition>
               </li>
             {% endif %}
-          </ul>
-        </div>
 
-    </div>
+            {% if user_role.name == "Admin" %}
+              <li>
+                <button @click="settingsDropdownOpen = !settingsDropdownOpen" class="w-full text-left px-4 py-2 rounded hover:bg-gray-100 font-medium">
+                  Settings
+                </button>
+                <transition name="fade">
+                  <ul v-show="settingsDropdownOpen" class="ml-4 mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded shadow py-2 px-2">
+                    <li><a href="{% url 'create-group' %}" class="block px-3 py-1 rounded hover:bg-gray-100">Create Role</a></li>
+                  </ul>
+                </transition>
+              </li>
+            {% endif %}
 
-    <!-- Content wrapper (shifts right when sidebarOpen) -->
-    <div
-      :style="{ marginLeft: sidebarOpen ? '16rem' : '0', transition: 'margin-left 0.3s' }"
-      class="min-h-screen flex flex-col"
-    >
+            <li><a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 rounded hover:bg-gray-100">Logout</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div :class="{ 'ml-64': sidebarOpen }" class="flex flex-col w-full min-h-screen transition-all duration-300">
       {% include "nav.html" %}
+
       {% block message %}
         {% if messages %}
           <div class="fixed top-16 right-4 z-50 space-y-2">
             {% for message in messages %}
-              <div class="px-4 py-3 rounded shadow text-white text-bold
+              <div class="px-4 py-3 rounded shadow text-white font-semibold
                 {% if message.tags == 'error' %} bg-red-600
                 {% elif message.tags == 'success' %} bg-green-600
                 {% else %} bg-blue-500
@@ -123,7 +109,6 @@
               </div>
             {% endfor %}
           </div>
-
           <script>
             setTimeout(() => {
               document.querySelectorAll('.z-50').forEach(el => el.remove());
@@ -132,32 +117,26 @@
         {% endif %}
       {% endblock message %}
 
-      {% block home %}
-      {% endblock home %}
-      <main class="flex-grow container mx-auto p-2" v-cloak>
-        {% block content %}
-        {% endblock content %}
+      {% block home %}{% endblock home %}
+
+      <main class="flex-grow px-8 py-6 bg-white shadow-inner" v-cloak>
+        {% block content %}{% endblock content %}
       </main>
-      
-      
-      <footer class="bg-gray-800 text-white py-4">
-        <div class="container mx-auto px-6 text-center">
-          <div class="border-t border-gray-700 mt-12 pt-8 text-sm text-white">
-            &copy; 2023 TaskMaster. All rights reserved.
-          </div>
-        </div>
+
+      <footer class="bg-gray-800 text-white py-4 text-center text-sm">
+        &copy; 2023 TaskManager. All rights reserved.
       </footer>
     </div>
-
   </div>
 
-  <!-- Vue App -->
   <script>
     const { createApp } = Vue;
     createApp({
       data() {
         return {
-          sidebarOpen: false
+          sidebarOpen: false,
+          tasksDropdownOpen: false,
+          settingsDropdownOpen: false
         };
       },
       methods: {
@@ -167,8 +146,5 @@
       }
     }).mount('#app');
   </script>
-
-
-  
 </body>
 </html>
