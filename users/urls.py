@@ -1,6 +1,6 @@
 from django.urls import path, include
 from django.urls import path
-from users.views import sign_up, sign_in, sign_out, activate_user, admin_dashboard, assign_role,create_group, group_list, view_task
+from users.views import sign_up, sign_in, sign_out, activate_user, admin_dashboard, assign_role,create_group, group_list
 from users.views import CustomLoginView, ProfileView, ChangePassword, CustomPasswordResetView, CustomPasswordResetConfirmView, EditProfileView
 from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordChangeDoneView
 from users.views import redirect_to_reset_password, vue_user_list
@@ -18,7 +18,6 @@ urlpatterns = [
     path('<int:user_id>/assign-role/', assign_role, name='assign-role'),
     path('admin/create-group/', create_group, name='create-group'),
     path('admin/group-list/', group_list, name='group-list'),
-    path('admin/show-tasks/', view_task, name='show-tasks' ),
     #path('profile/', TemplateView.as_view(template_name='accounts/profile.html'), name='profile'),
     path('profile/', ProfileView.as_view(), name='profile'),
     # path('password-change/', PasswordChangeView.as_view(

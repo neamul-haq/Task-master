@@ -175,7 +175,7 @@ def vue_user_list(request):
         'users_json': json.dumps(users_data, cls=DjangoJSONEncoder)
     })
 
-@user_passes_test(is_admin, login_url='permission-denied')
+
 @user_passes_test(is_admin, login_url='permission-denied')
 def admin_dashboard(request):
     users = User.objects.select_related('custom_role__role').all()
@@ -267,11 +267,6 @@ def group_list(request):
     groups = Group.objects.prefetch_related('permissions').all()
     return render(request, 'admin/group_list.html', {'groups':groups})
 
-@user_passes_test(is_admin, login_url='permission-denied')
-def view_task(request):
-    #Retrieve all data from Task Model
-    tasks = Task.objects.all()
-    return render(request, "admin/show_tasks.html", {"tasks": tasks})
 
 class CustomLoginView(LoginView):
     form_class = LoginForm

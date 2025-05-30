@@ -132,7 +132,9 @@
   <script id="users-data" type="application/json">
   {{ users_json|safe }}
 </script>
-
+<script id="tasks-data" type="application/json">
+  {{ tasks_json|safe }}
+</script>
 <script>
   const { createApp } = Vue;
   createApp({
@@ -153,10 +155,19 @@
             return [];
           }
         })(),
+        tasks: (() => {
+          const el = document.getElementById('tasks-data');
+          try {
+            return el ? JSON.parse(el.textContent) : [];
+          } catch (e) {
+            console.warn('Failed to parse tasks data', e);
+            return [];
+          }
+        })(),
 
         search: '',
         currentPage: 1,
-        perPage: 10
+        perPage: 8
       };
     },
     computed: {
@@ -175,7 +186,23 @@
       paginatedUsers() {
         const start = (this.currentPage - 1) * this.perPage;
         return this.filteredUsers.slice(start, start + this.perPage);
+      },
+      filteredTasks() {
+        const s = this.search.toLowerCase();
+        return this.tasks.filter(task =>
+          task.title.toLowerCase().includes(s) ||
+          task.status.toLowerCase().includes(s) ||
+          task.priority_display.toLowerCase().includes(s)
+        );
+      },
+      taskTotalPages() {
+        return Math.ceil(this.filteredTasks.length / this.perPage);
+      },
+      paginatedTasks() {
+        const start = (this.currentPage - 1) * this.perPage;
+        return this.filteredTasks.slice(start, start + this.perPage);
       }
+
     },
     methods: {
       toggleSidebar() {
