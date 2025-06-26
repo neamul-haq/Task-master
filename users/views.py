@@ -28,6 +28,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 import re
 from collections import defaultdict
 from core.models import Permission, Role 
+from tasks.views import require_custom_permission
 
 class EditProfileView(UpdateView):
     model = User
@@ -59,32 +60,8 @@ class EditProfileView(UpdateView):
         return redirect('profile')
     
 
-#Test for users
-# def is_admin(user):
-#     return user.groups.filter(name='Admin').exists()
-
 def is_admin(user):
     return hasattr(user, 'custom_role') and user.custom_role.role.name == 'Admin'
-
-
-# Create your views here.
-# def sign_up(request):
-#     form = CustomRegistrationForm()#get
-#     if request.method == 'POST':
-#         form = CustomRegistrationForm(request.POST)
-#         if form.is_valid():
-#             user = form.save(commit=False)
-#             user.set_password(form.cleaned_data.get('password1'))
-#             user.is_active = False
-#             user.save()
-#             messages.success(
-#                 request, 'A Confirmation mail sent. Please check your mail')
-#             return redirect('sign-in')
-#         else:
-#             print("Form is not valid")
-#     return render(request, 'registration/register.html', {"form" : form})
-
-  # ✅ make sure these are imported
 
 def sign_up(request):
     form = CustomRegistrationForm()
@@ -127,13 +104,6 @@ def sign_in(request):
             return redirect('home')
     return render(request, 'registration/login.html',{'form': form})
 
-
-# @login_required
-# def sign_out(request):
-#     if request.method == 'POST':
-#         logout(request)
-#         return redirect('sign-in')
-    
 
 @login_required
 def sign_out(request):
@@ -197,7 +167,7 @@ def admin_dashboard(request):
     })
 
         
-        
+    
 @user_passes_test(is_admin, login_url='permission-denied')        
 def assign_role(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -217,21 +187,6 @@ def assign_role(request, user_id):
     return render(request, 'admin/assign_role.html', {"form": form, "user": user})
 
 
-# @user_passes_test(is_admin, login_url='permission-denied')  
-# def create_group(request):
-#     form = CreateGroupForm()
-    
-#     if request.method == 'POST':
-#         form = CreateGroupForm(request.POST)
-#         if form.is_valid():
-#             role = Role.objects.create(name=form.cleaned_data['name'])
-#             permissions = form.cleaned_data['permissions']
-#             role.permissions.set(permissions)
-
-#             messages.success(request, f"✅ Role '{role.name}' created with {permissions.count()} permission(s).")
-#             return redirect('create-group')
-    
-#     return render(request, 'admin/create_group.html', {'form': form})
 def group_permissions():
     groups = defaultdict(list)
     for perm in Permission.objects.all():
@@ -242,7 +197,9 @@ def group_permissions():
             groups[group].append(perm)
     return dict(groups)
 
-def create_group(request):
+@login_required
+@require_custom_permission("can_add_role")
+def create_role(request):
     form = CreateGroupForm()
     grouped_permissions = group_permissions()
 
@@ -253,19 +210,42 @@ def create_group(request):
             permissions = form.cleaned_data['permissions']
             role.permissions.set(permissions)
             messages.success(request, f"✅ Role '{role.name}' created with {permissions.count()} permission(s).")
-            return redirect('create-group')
+            return redirect('create-role')
 
     return render(request, 'admin/create_group.html', {
         'form': form,
         'grouped_permissions': grouped_permissions
     })
 
+@login_required
+@require_custom_permission("can_view_role")
+def view_roles(request):
+    roles = Role.objects.prefetch_related('permissions').all()
+    context = {
+        'roles': roles,
+    }
+    return render(request, 'admin/view_roles.html', context)
 
+@user_passes_test(is_admin, login_url='home')
+def edit_role(request, role_id):
+    role = get_object_or_404(Role, id=role_id)
+    if request.method == 'POST':
+        form = CreateGroupForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Role '{role.name}' updated successfully.")
+            return redirect('view-roles')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = CreateGroupForm(instance=role)
+    
+    context = {
+        'form': form,
+        'role': role,
+    }
+    return render(request, 'admin/edit_role.html', context)
 
-@user_passes_test(is_admin, login_url='no-permission')
-def group_list(request):
-    groups = Group.objects.prefetch_related('permissions').all()
-    return render(request, 'admin/group_list.html', {'groups':groups})
 
 
 class CustomLoginView(LoginView):

@@ -4,7 +4,7 @@
     <h2 class="text-2xl font-semibold text-center text-rose-600 mb-6">Create New Role</h2>
   
 {% if messages %}
-          <div class="fixed top-16 right-4 z-50 space-y-2">
+          <div class="fixed top-16 right-4 message-container space-y-2">
             {% for message in messages %}
               <div class="px-4 py-3 rounded shadow text-white text-bold
                 {% if message.tags == 'error' %} bg-red-600
@@ -18,7 +18,7 @@
 
           <script>
             setTimeout(() => {
-              document.querySelectorAll('.z-50').forEach(el => el.remove());
+              document.querySelectorAll('.message-container').forEach(el => el.remove());
             }, 4000);
           </script>
 {% endif %}
@@ -33,84 +33,84 @@
   
   
         <div class="space-y-6 mb-8">
-  <h3 class="text-xl font-bold text-gray-800">Select Permission Groups:</h3>
+          <h3 class="text-xl font-bold text-gray-800">Select Permission Groups:</h3>
 
-  <div class="grid sm:grid-cols-2 gap-4">
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="project-all" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-          <span>Project</span>
-        </div>
-        <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
-      </div>
-    </label>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="project-all" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Project</span>
+                </div>
+                <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+              </div>
+            </label>
 
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-edit" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-           <span>Task Add/Update</span>
-        </div>
-        <p class="text-sm text-gray-600">Permissions: add, update</p>
-      </div>
-    </label>
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-all" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Task </span>
+                </div>
+                <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+              </div>
+            </label>
 
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-delete" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-           <span>Task Delete </span>
-        </div>
-        <p class="text-sm text-gray-600">Permissions: delete only</p>
-      </div>
-    </label>
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="role" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Role</span>
+                </div>
+                <p class="text-sm text-gray-600">Permissions: create, view</p>
+              </div>
+            </label>
 
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-view" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-           <span>Task View</span>
-        </div>
-        <p class="text-sm text-gray-600">Permissions: view only</p>
-      </div>
-    </label>
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-view" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Task View</span>
+                </div>
+                <p class="text-sm text-gray-600">Permissions: view only</p>
+              </div>
+            </label>
 
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-edit" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-          <span>Task Detail Add/Update/Delete</span>
-        </div>
-        <p class="text-sm text-gray-600">Permissions: add, update, delete</p>
-      </div>
-    </label>
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-all" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Task Detail </span>
+                </div>
+                <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+              </div>
+            </label>
 
-    <label
-      class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
-      <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-view" />
-      <div>
-        <div class="font-medium text-gray-900 flex items-center gap-1">
-           <span>Task Detail View</span>
+            <label
+              class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+              <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-view" />
+              <div>
+                <div class="font-medium text-gray-900 flex items-center gap-1">
+                  <span>Task Detail View</span>
+                </div>
+                <p class="text-sm text-gray-600">Permissions: view only</p>
+              </div>
+            </label>
+          </div>
         </div>
-        <p class="text-sm text-gray-600">Permissions: view only</p>
-      </div>
-    </label>
-  </div>
-</div>
 
 
       <!-- Hidden actual permissions field -->
       <div id="hidden-permissions">
         {% for checkbox in form.permissions %}
-          <div class="perm-field" data-label="{{ checkbox.choice_label|slugify }}">
+          <div class="perm-field" data-label="{{ checkbox.choice_label}}">
             <div class="hidden">
-              {{ checkbox.tag }}
+              {{ checkbox.tag }}{{ checkbox.choice_label}}
             </div>
           </div>
         {% endfor %}
@@ -138,11 +138,12 @@
   <script>
   const permMap = {
     'project-all': ['can_add_project', 'can_view_project', 'can_change_project', 'can_delete_project'],
-    'task-edit': ['can_add_task', 'can_change_task'],
+    'task-all': ['can_add_task', 'can_view_task', 'can_change_task', 'can_delete_task'],
     'task-delete': ['can_delete_task'],
     'task-view': ['can_view_task'],
-    'taskdetail-edit': ['can_add_taskdetail', 'can_change_taskdetail', 'can_delete_taskdetail'],
-    'taskdetail-view': ['can_view_taskdetail']
+    'taskdetail-all': ['can_add_taskdetail', 'can_change_taskdetail', 'can_delete_taskdetail', 'can_view_taskdetail'],
+    'taskdetail-view': ['can_view_taskdetail'],
+    'role': ['can_add_role', 'can_view_role']
   };
 
   document.addEventListener("DOMContentLoaded", () => {

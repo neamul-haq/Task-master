@@ -1,0 +1,160 @@
+{% extends "admin/dashboard.html" %}
+{% load static %}
+
+{% block title %}Edit Role: {{ role.name }}{% endblock title %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto my-12 p-8 bg-white shadow-xl rounded-xl">
+  <h2 class="text-2xl font-semibold text-center text-rose-600 mb-6">Edit Role: {{ role.name }}</h2>
+
+  {% if messages %}
+  <div class="fixed top-16 right-4 message-container space-y-2">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded shadow text-white font-bold
+      {% if message.tags == 'error' %} bg-red-600
+      {% elif message.tags == 'success' %} bg-green-600
+      {% else %} bg-blue-500
+      {% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.message-container').forEach(el => el.remove());
+    }, 4000);
+  </script>
+  {% endif %}
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+
+    <div>
+      <label class="block mb-1 font-medium text-gray-700">{{ form.name.label }}</label>
+      {{ form.name }}
+      {% if form.name.errors %}
+      <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div class="space-y-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-800">Select Permission Groups:</h3>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="project-all" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Project</span>
+            </div>
+            <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+          </div>
+        </label>
+
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-all" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Task</span>
+            </div>
+            <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+          </div>
+        </label>
+
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="role" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Role</span>
+            </div>
+            <p class="text-sm text-gray-600">Permissions: create, view</p>
+          </div>
+        </label>
+
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="task-view" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Task View</span>
+            </div>
+            <p class="text-sm text-gray-600">Permissions: view only</p>
+          </div>
+        </label>
+
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-all" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Task Detail</span>
+            </div>
+            <p class="text-sm text-gray-600">All permissions: create, update, delete, view</p>
+          </div>
+        </label>
+
+        <label class="flex items-start p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition group cursor-pointer">
+          <input type="checkbox" class="mt-1 mr-3 group-checkbox accent-blue-600" data-perms="taskdetail-view" />
+          <div>
+            <div class="font-medium text-gray-900 flex items-center gap-1">
+              <span>Task Detail View</span>
+            </div>
+            <p class="text-sm text-gray-600">Permissions: view only</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Hidden actual permissions field -->
+    <div id="hidden-permissions">
+      {% for checkbox in form.permissions %}
+      <div class="perm-field" data-label="{{ checkbox.choice_label}}">
+        <div class="hidden">
+          {{ checkbox.tag }} {{ checkbox.choice_label}}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Button Group -->
+    <div class="flex justify-center gap-4 pt-4">
+      <button type="submit" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold px-6 py-2 rounded-md shadow transition duration-300">
+        Update Role
+      </button>
+      <a href="{% url 'view-roles' %}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-6 py-2 rounded-md shadow transition duration-300">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+const permMap = {
+  'project-all': ['can_add_project', 'can_view_project', 'can_change_project', 'can_delete_project'],
+  'task-all': ['can_add_task', 'can_view_task', 'can_change_task', 'can_delete_task'],
+  'task-view': ['can_view_task'],
+  'taskdetail-all': ['can_add_taskdetail', 'can_change_taskdetail', 'can_delete_taskdetail', 'can_view_taskdetail'],
+  'taskdetail-view': ['can_view_taskdetail'],
+  'role': ['can_add_role', 'can_view_role']
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Pre-check group checkboxes based on selected permissions
+  const selectedPerms = Array.from(document.querySelectorAll('#hidden-permissions .perm-field input:checked')).map(input => input.value);
+  document.querySelectorAll(".group-checkbox").forEach(cb => {
+    const groupPerms = permMap[cb.dataset.perms] || [];
+    const isChecked = groupPerms.every(perm => selectedPerms.includes(perm));
+    cb.checked = isChecked;
+  });
+
+  // Handle checkbox changes
+  document.querySelectorAll(".group-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const group = cb.dataset.perms;
+      const perms = permMap[group] || [];
+      perms.forEach(code => {
+        const checkbox = document.querySelector(`#hidden-permissions .perm-field[data-label="${code}"] input`);
+        if (checkbox) checkbox.checked = cb.checked;
+      });
+    });
+  });
+});
+</script>
+{% endblock content %}

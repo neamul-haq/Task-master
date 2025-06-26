@@ -75,11 +75,6 @@ class LoginForm(StyledFormMixin, AuthenticationForm):
         super().__init__(*args, **kwargs)
         
 
-# class AssignRoleForm(StyledFormMixin ,forms.Form):
-#     role = forms.ModelChoiceField(
-#         queryset=Group.objects.all(),
-#         empty_label="Select a Role"
-#     )
     
 class AssignRoleForm(StyledFormMixin, forms.Form):
     role = forms.ModelChoiceField(
@@ -87,18 +82,6 @@ class AssignRoleForm(StyledFormMixin, forms.Form):
         empty_label="Select a Role",
         label="User Role"
     )
-    
-# class CreateGroupForm(StyledFormMixin, forms.ModelForm):
-#     permissions = forms.ModelMultipleChoiceField(
-#         queryset=Permission.objects.all(),
-#         widget=forms.CheckboxSelectMultiple,
-#         required=False,
-#         label = 'Assign Permission'
-#     )
-    
-#     class Meta:
-#         model = Group
-#         fields = ['name', 'permissions']
 
 
 class CreateGroupForm(StyledFormMixin, forms.ModelForm):
@@ -136,7 +119,6 @@ class EditProfileForm(StyledFormMixin, forms.ModelForm):
         self.userprofile = kwargs.pop('userprofile', None)
         super().__init__(*args, **kwargs)
         
-        #TODO: Handle error
         
         if self.userprofile:
             self.fields['bio'].initial = self.userprofile.bio
@@ -148,7 +130,6 @@ class EditProfileForm(StyledFormMixin, forms.ModelForm):
         if self.userprofile:
             self.userprofile.bio = self.cleaned_data.get('bio')
 
-            # ✅ Fix starts here
             image_clear = self.data.get('profile_image-clear')
             if image_clear == 'on':
                 self.userprofile.profile_image.delete(save=False)
@@ -157,7 +138,6 @@ class EditProfileForm(StyledFormMixin, forms.ModelForm):
                 image = self.cleaned_data.get('profile_image')
                 if image:
                     self.userprofile.profile_image = image
-            # ✅ Fix ends here
 
             if commit:
                 self.userprofile.save()

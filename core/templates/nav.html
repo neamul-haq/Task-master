@@ -1,7 +1,7 @@
 {% load static %}
 <header class="bg-white shadow-md">
-  <nav class="container mx-auto px-6 py-3">
-    <div class="flex justify-between items-center">
+  <nav class="mx-10 py-3">
+    <div class="flex justify-between items-center w-full">
       <div class="flex items-center gap-4">
         <!-- Sidebar toggle icon -->
         <button @click="toggleSidebar" class="text-4xl md:text-3xl">☰</button>
@@ -9,7 +9,8 @@
           <img src="{% static 'images/taskmanager.png' %}" alt="TaskManager Logo" class="h-12 w-auto" />
         </a>
       </div>
-      {% if not request.user.is_authenticated %}
+      <div class="flex items-center gap-4">
+        {% if not request.user.is_authenticated %}
           <div class="flex gap-1">
             <a href="{% url 'social:begin' 'auth0' %}?prompt=login&scope=openid profile email"
               class="hidden md:block bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-300">
@@ -20,13 +21,14 @@
               Sign Up
             </a>
           </div>
-      {% else %}
-        <a href="{% url 'profile' %}" class=" px-4 py-2">
-          {% with request.user.userprofile.image_url as avatar %}
-            <img src="{{ avatar }}" alt="User Avatar" class="w-12 h-12 rounded-full object-cover" />
-          {% endwith %}
-        </a>
-      {% endif %}
+        {% else %}
+          <a href="{% url 'profile' %}" class="px-4 py-2">
+            {% with request.user.userprofile.image_url as avatar %}
+              <img src="{{ avatar }}" alt="User Avatar" class="w-12 h-12 rounded-full object-cover" />
+            {% endwith %}
+          </a>
+        {% endif %}
+      </div>
     </div>
   </nav>
 </header>

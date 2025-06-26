@@ -1,8 +1,9 @@
 from django.contrib import admin
-
-# Register your models here.
+from django.core.cache import cache
+from django.contrib import messages
 from core.models import Permission, Role, UserRole
-# Register your models here.
+
+# Register Permission model with default admin
 admin.site.register(Permission)
 admin.site.register(Role)
 admin.site.register(UserRole)

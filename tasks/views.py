@@ -19,12 +19,32 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+from django.contrib import admin
 # --- Role checkers using Custom Model Manager ---
 def get_user_role(user):
     return UserRole.objects.get_role_name(user)
 
 def has_custom_permission(user, code):
-    return UserRole.objects.has_permission(user, code)
+
+    if not user.is_authenticated:
+        return False
+
+    # Generate a unique cache key for the user's permission
+    cache_key = f"user:{user.id}:permission:{code}"
+    
+
+    cached_permission = cache.get(cache_key)
+    
+    if cached_permission is not None:
+        print("✅ Permission checked from cache")
+        return cached_permission  # Return cached result (True/False)
+    
+    has_permission = UserRole.objects.has_permission(user, code)
+    print("🚨 DB hit for checking permission")
+    # Cache the result in Redis with a TTL (e.g., 3600 seconds = 1 hour)
+    cache.set(cache_key, has_permission, timeout=3600)
+    
+    return has_permission
 
 def require_custom_permission(permission_code):
     def decorator(view_func):
@@ -35,6 +55,7 @@ def require_custom_permission(permission_code):
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
+
 
 # --- Views ---
 

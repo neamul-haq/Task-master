@@ -23,7 +23,7 @@
     }
     [v-cloak] { display: none; }
   </style>
-
+  <script src="https://unpkg.com/heroicons@2.1.1/dist/heroicons.min.js"></script>
   <script src="https://unpkg.com/vue@3.5.16/dist/vue.global.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -42,10 +42,10 @@
     <!-- Sidebar -->
     <aside v-show="sidebarOpen" class="fixed top-0 left-0 h-full w-64 bg-white border-r shadow-md p-6 z-50 transition-transform duration-300">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold text-gray-800">Menu</h2>
-        <button @click="toggleSidebar" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Close</button>
+        <h2 class="text-xl font-semibold text-gray-800"></h2>
+        <button @click="toggleSidebar" class="text-gray-800 hover:text-gray-900 text-4xl font-medium"><</button>
       </div>
-      <nav>
+      <!-- <nav>
         <ul class="space-y-4">
           <li><a href="{% url 'home' %}" class="block px-4 py-2 rounded hover:bg-gray-100">Home</a></li>
 
@@ -80,13 +80,129 @@
                 </button>
                 <transition name="fade">
                   <ul v-show="settingsDropdownOpen" class="ml-4 mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded shadow py-2 px-2">
-                    <li><a href="{% url 'create-group' %}" class="block px-3 py-1 rounded hover:bg-gray-100">Create Role</a></li>
+                    <li><a href="{% url 'create-role' %}" class="block px-3 py-1 rounded hover:bg-gray-100">Create Role</a></li>
+                    <li><a href="{% url 'view-roles' %}" class="block px-3 py-1 rounded hover:bg-gray-100">Roles</a></li>
                   </ul>
                 </transition>
               </li>
             {% endif %}
 
             <li><a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 rounded hover:bg-gray-100">Logout</a></li>
+          {% endif %}
+        </ul>
+      </nav> -->
+      <nav>
+        <ul class="space-y-4">
+          <li>
+            <a href="{% url 'home' %}" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
+              <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-7 7v-9m-4 9h8"></path>
+              </svg>
+              Home
+            </a>
+          </li>
+
+          {% if not request.user.is_authenticated %}
+            <li>
+              <a href="{% url 'social:begin' 'auth0' %}?prompt=login&scope=openid profile email" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
+                <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14"></path>
+                </svg>
+                Sign In
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'social:begin' 'auth0' %}?screen_hint=signup" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
+                <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+                Sign Up
+              </a>
+            </li>
+          {% else %}
+            <li>
+              <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 rounded hover:bg-gray-100">
+                <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                </svg>
+                Dashboard
+              </a>
+            </li>
+
+            {% if user_role.name == 'Admin' or user_role.name == 'Manager' %}
+              <li>
+                <button @click="tasksDropdownOpen = !tasksDropdownOpen" class="w-full flex items-center text-left px-4 py-2 rounded hover:bg-gray-100 font-medium">
+                  <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                  </svg>
+                  Tasks
+                </button>
+                <transition name="fade">
+                  <ul v-show="tasksDropdownOpen" class="ml-4 mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded shadow py-2 px-2">
+                    {% if user_role.name == 'Admin' %}
+                      <li>
+                        <a href="{% url 'can_view_task' %}" class="flex items-center px-3 py-1 rounded hover:bg-gray-100">
+                          <svg class="w-4 h-4 mr-2 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                          View Tasks
+                        </a>
+                      </li>
+                    {% endif %}
+                    {% if user_role.name == 'Manager' or user_role.name == 'Admin' %}
+                      <li>
+                        <a href="{% url 'can_add_task' %}" class="flex items-center px-3 py-1 rounded hover:bg-gray-100">
+                          <svg class="w-4 h-4 mr-2 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                          </svg>
+                          Create Task
+                        </a>
+                      </li>
+                    {% endif %}
+                  </ul>
+                </transition>
+              </li>
+            {% endif %}
+
+            {% if user_role.name == "Admin" %}
+              <li>
+                <button @click="settingsDropdownOpen = !settingsDropdownOpen" class="w-full flex items-center text-left px-4 py-2 rounded hover:bg-gray-100 font-medium">
+                  <svg class="w-5 h-5 mr-3 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37 1 .685 2.018.767 2.573 1.066z"></path>
+                  </svg>
+                  Settings
+                </button>
+                <transition name="fade">
+                  <ul v-show="settingsDropdownOpen" class="ml-4 mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded shadow py-2 px-2">
+                    <li>
+                      <a href="{% url 'create-role' %}" class="flex items-center px-3 py-1 rounded hover:bg-gray-100">
+                        <svg class="w-4 h-4 mr-2 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.1.9-2 2-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zm0 0c0-1.1-.9-2-2-2H8a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2zm0 0V3m0 8v10"></path>
+                        </svg>
+                        Create Role
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'view-roles' %}" class="flex items-center px-3 py-1 rounded hover:bg-gray-100">
+                        <svg class="w-4 h-4 mr-2 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Roles
+                      </a>
+                    </li>
+                  </ul>
+                </transition>
+              </li>
+            {% endif %}
+
+            <li>
+              <a href="{% url 'logout' %}" class="flex items-center px-4 py-2 text-red-600 rounded hover:bg-gray-100">
+                <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+              </a>
+            </li>
           {% endif %}
         </ul>
       </nav>
@@ -98,7 +214,7 @@
 
       {% block message %}
         {% if messages %}
-          <div class="fixed top-16 right-4 z-50 space-y-2">
+          <div class="fixed top-16 right-4 message-container space-y-2">
             {% for message in messages %}
               <div class="px-4 py-3 rounded shadow text-white font-semibold
                 {% if message.tags == 'error' %} bg-red-600
@@ -111,7 +227,7 @@
           </div>
           <script>
             setTimeout(() => {
-              document.querySelectorAll('.z-50').forEach(el => el.remove());
+              document.querySelectorAll('.message-container').forEach(el => el.remove());
             }, 4000);
           </script>
         {% endif %}
@@ -135,6 +251,7 @@
 <script id="tasks-data" type="application/json">
   {{ tasks_json|safe }}
 </script>
+
 <script>
   const { createApp } = Vue;
   createApp({
@@ -144,8 +261,6 @@
         sidebarOpen: false,
         tasksDropdownOpen: false,
         settingsDropdownOpen: false,
-
-        // Add user table state here 👇
         users: (() => {
           const el = document.getElementById('users-data');
           try {
@@ -164,7 +279,6 @@
             return [];
           }
         })(),
-
         search: '',
         currentPage: 1,
         perPage: 8
@@ -201,8 +315,78 @@
       paginatedTasks() {
         const start = (this.currentPage - 1) * this.perPage;
         return this.filteredTasks.slice(start, start + this.perPage);
+      },
+      // New computed property for numbered pagination range
+      paginationRange() {
+        const delta = 2; // Number of pages to show before/after current page
+        const range = [];
+        const start = Math.max(1, this.currentPage - delta);
+        const end = Math.min(this.totalPages, this.currentPage + delta);
+        
+        for (let i = start; i <= end; i++) {
+          range.push(i);
+        }
+        
+        // Add ellipsis and first/last pages if needed
+        if (start > 1) {
+          range.unshift(1);
+          if (start > 2) range.splice(1, 0, '...');
+        }
+        if (end < this.totalPages) {
+          if (end < this.totalPages - 1) range.push('...');
+          range.push(this.totalPages);
+        }
+        
+        return range;
+      },
+      // New computed property for jump-to pages (10, 15, 20, ...)
+      jumpPages() {
+        const jumpInterval = 5; // Pages to jump (5, 10, 15, ...)
+        const pages = [];
+        for (let i = 1; i <= this.totalPages; i += jumpInterval) {
+          pages.push(i);
+        }
+        // Add the last page if it's not included
+        if (pages[pages.length - 1] !== this.totalPages) {
+          pages.push(this.totalPages);
+        }
+        return pages;
+      },
+      paginationRangeTasks() {
+        const delta = 2; // Number of pages to show before/after current page
+        const range = [];
+        const start = Math.max(1, this.currentPage - delta);
+        const end = Math.min(this.taskTotalPages, this.currentPage + delta);
+        
+        for (let i = start; i <= end; i++) {
+          range.push(i);
+        }
+        
+        // Add ellipsis and first/last pages if needed
+        if (start > 1) {
+          range.unshift(1);
+          if (start > 2) range.splice(1, 0, '...');
+        }
+        if (end < this.taskTotalPages) {
+          if (end < this.taskTotalPages - 1) range.push('...');
+          range.push(this.taskTotalPages);
+        }
+        
+        return range;
+      },
+      // New computed property for jump-to pages (10, 15, 20, ...)
+      jumpPagesTasks() {
+        const jumpInterval = 5; // Pages to jump (5, 10, 15, ...)
+        const pages = [];
+        for (let i = 1; i <= this.taskTotalPages; i += jumpInterval) {
+          pages.push(i);
+        }
+        // Add the last page if it's not included
+        if (pages[pages.length - 1] !== this.taskTotalPages) {
+          pages.push(this.taskTotalPages);
+        }
+        return pages;
       }
-
     },
     methods: {
       toggleSidebar() {
@@ -211,6 +395,5 @@
     }
   }).mount('#app');
 </script>
-
 </body>
 </html>
